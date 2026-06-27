@@ -2,7 +2,8 @@ import customtkinter as ctk
 from tkinter import messagebox
 from PIL import Image
 import sqlite3
-from dashboard import Dashboard
+from interface.dashboard import Dashboard
+from database import conectar
 
 
 class Login:
@@ -242,7 +243,7 @@ class Login:
 
         try:
 
-            conn = sqlite3.connect("database/hospital.db")
+            conn = conectar()
             cursor = conn.cursor()
 
             cursor.execute("""
@@ -258,10 +259,6 @@ class Login:
 
             if dados:
 
-                messagebox.showinfo(
-                    "Sucesso",
-                    f"Bem-vindo, {dados[1]}!"
-                )
 
                 self.root.destroy()
 
@@ -283,9 +280,10 @@ class Login:
         )
 
 if __name__ == "__main__":
-
+   
     ctk.set_appearance_mode("light")
     ctk.set_default_color_theme("blue")
+    
 
     root = ctk.CTk()
 

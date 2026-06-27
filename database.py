@@ -52,6 +52,24 @@ def criar_tabelas():
         FOREIGN KEY(medico) REFERENCES medicos(id)
     )
     """)
+    conn.commit()
+    conn.close()
+def criar_admin():
+
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    INSERT OR IGNORE INTO utilizadores
+    (nome, username, senha, perfil)
+    VALUES (?, ?, ?, ?)
+    """, (
+        "Administrador",
+        "admin",
+        "1234",
+        "Administrador"
+    ))
 
     conn.commit()
     conn.close()
+
