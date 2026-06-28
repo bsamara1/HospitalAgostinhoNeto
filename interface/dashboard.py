@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from PIL import Image
 from database import consultas_hoje, consultar_prioridade,consultar_agenda_medicos
-
+from tkinter import messagebox
 
 class Dashboard(ctk.CTk):
 
@@ -86,7 +86,8 @@ class Dashboard(ctk.CTk):
                 text_color="white",
                 anchor="w",
                 hover_color="#11457B",
-                height=45
+                height=45,
+                command=lambda nome=text: self.abrir_menu(nome)
             ).pack(fill="x", padx=15, pady=3)
 
         ctk.CTkButton(
@@ -98,15 +99,72 @@ class Dashboard(ctk.CTk):
             text_color="#FF6B6B",
             hover_color="#2A3F5F",
             anchor="w",
-            height=45
+            height=45,
+            command=self.terminar_sessao
         ).pack(side="bottom", fill="x", padx=15, pady=20)
         ctk.CTkFrame(
             self.sidebar,
             height=1,
             fg_color="#35506E"
         ).pack(side="bottom", fill="x", padx=15, pady=(0, 10))
+    def terminar_sessao(self):
 
+        confirmar = messagebox.askyesno(
+            "Terminar Sessão",
+            "Deseja realmente terminar a sessão?"
+        )
 
+        if confirmar:
+            self.destroy()
+
+            import customtkinter as ctk
+            from interface.login import Login
+
+            root = ctk.CTk()
+
+            Login(root)
+
+            root.mainloop()
+    
+    def abrir_menu(self, menu):
+
+        self.destroy()
+
+        if menu == "Médicos":
+            from interface.medicos import Medicos
+
+            Medicos().mainloop()
+
+            app.mainloop()
+        if menu == "Pacientes":
+            from interface.pacientes import Pacientes
+            Pacientes().mainloop()   
+        
+        elif menu == "Marcações":
+            from interface.marcacao import Marcacao
+            Marcacao().mainloop() 
+        elif menu == "Reagendamento":
+            from interface.reagendamento import Reagendamento
+            Reagendamento().mainloop() 
+        elif menu == "Cancelamento":
+            from interface.cancelamento import Cancelamento
+            Cancelamento().mainloop() 
+        elif menu == "Triagem":
+            from interface.triagem import Triagem
+            Triagem().mainloop() 
+        elif menu == "Prioridades":
+            from interface.prioridades import Prioridades
+            Prioridades().mainloop() 
+        elif menu == "Relatórios":
+            from interface.relatorios import Relatorios
+            Relatorios().mainloop() 
+        elif menu == "Definições":
+            from interface.definicao import Definicao
+            Definicao().mainloop() 
+                
+    
+    
+    
     # =========================
     # MAIN AREA
     # =========================

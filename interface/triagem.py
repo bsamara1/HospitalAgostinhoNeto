@@ -2,7 +2,7 @@ import customtkinter as ctk
 from PIL import Image
 from tkinter import messagebox
 
-class Relatorios(ctk.CTk):
+class Triagem(ctk.CTk):
 
     def __init__(self):
         super().__init__()
@@ -160,15 +160,15 @@ class Relatorios(ctk.CTk):
         elif menu == "Cancelamento":
             from interface.cancelamento import Cancelamento
             Cancelamento().mainloop() 
-        elif menu == "Triagem":
-            from interface.triagem import Triagem
-            Triagem().mainloop() 
-        elif menu == "Prioridades":
-            from interface.prioridades import Prioridades
-            Prioridades().mainloop() 
         elif menu == "Dashboard":
             from interface.dashboard import Dashboard
             Dashboard().mainloop() 
+        elif menu == "Prioridades":
+            from interface.prioridades import Prioridades
+            Prioridades().mainloop() 
+        elif menu == "Relatórios":
+            from interface.relatorios import Relatorios
+            Relatorios().mainloop() 
         elif menu == "Definições":
             from interface.definicao import Definicao
             Definicao().mainloop() 
@@ -192,7 +192,7 @@ class Relatorios(ctk.CTk):
 
         ctk.CTkLabel(
             topbar,
-            text="Relatorios",
+            text="Marcacao",
             font=("Segoe UI", 22, "bold"),
             text_color="#0B2A4A"
         ).pack(side="left",padx=20)
@@ -237,10 +237,15 @@ class Relatorios(ctk.CTk):
             text_color="gray"
         ).pack(anchor="w")
 
+    
+
+  
+  
+
 
 # =========================
 # RUN APP
 # =========================
 if __name__ == "__main__":
-    app = Relatorios()
+    app = Triagem()
     app.mainloop()
