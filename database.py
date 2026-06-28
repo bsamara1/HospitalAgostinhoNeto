@@ -73,3 +73,62 @@ def criar_admin():
     conn.commit()
     conn.close()
 
+def consultas_hoje():
+
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            p.nome,
+            m.nome,
+            c.hora,
+            c.prioridade,
+            c.estado
+        FROM consultas c
+        JOIN pacientes p
+            ON c.paciente = p.id
+        JOIN medicos m
+            ON c.medico = m.id
+        WHERE c.data = date('now')
+        ORDER BY c.hora
+    """)
+
+    dados = cursor.fetchall()
+
+    conn.close()
+
+    return dados
+
+def consultar_prioridade():
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT prioridade,
+COUNT(*)
+FROM consultas
+WHERE data=date('now')
+GROUP BY prioridade
+    """)
+
+    dados = cursor.fetchall()
+
+    conn.close()
+
+    return dados
+def consultar_agenda_medicos():
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT
+nome,
+especialidade,
+horario
+FROM medicos;
+    """)
+
+    dados = cursor.fetchall()
+
+    conn.close()
+
+    return dados

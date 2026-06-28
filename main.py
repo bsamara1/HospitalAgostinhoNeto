@@ -3,7 +3,7 @@ from database import criar_tabelas,criar_admin
 from interface.login import Login
 
 criar_tabelas()
-criar_admin()
+criar_admin
 
 root = ctk.CTk()
 
