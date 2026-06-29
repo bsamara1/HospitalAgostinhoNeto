@@ -1,6 +1,10 @@
 import sqlite3
+import os
 
-DATABASE = "database/hospital.db"
+# Use an absolute path for the database file (next to this module)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+os.makedirs(BASE_DIR, exist_ok=True)
+DATABASE = os.path.join(BASE_DIR, "hospital.db")
 
 def conectar():
     return sqlite3.connect(DATABASE)
