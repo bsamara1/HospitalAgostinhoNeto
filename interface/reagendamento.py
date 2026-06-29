@@ -8,9 +8,8 @@ class Reagendamento(ctk.CTk):
         super().__init__()
 
         self.title("HAN - Hospital Agostinho Neto")
-        self.state("zoomed")
-        self.configure(fg_color="#F4F6FB")
-
+        self.after(10, lambda: self.state("zoomed"))        
+        self.configure(fg_color="#F4F6FB")    
         self.ui()
 
     # =========================
@@ -215,33 +214,6 @@ class Reagendamento(ctk.CTk):
 
         user = ctk.CTkFrame(topbar, fg_color="transparent")
         user.pack(side="right")
-
-        ctk.CTkLabel(
-            user,
-            image=avatar,
-            text=""
-        ).pack(side="left", padx=10)
-
-        texto = ctk.CTkFrame(user, fg_color="transparent")
-        texto.pack(side="left")
-
-        ctk.CTkLabel(
-            texto,
-            text="Administrador",
-            font=("Segoe UI",15,"bold")
-        ).pack(anchor="w")
-
-        ctk.CTkLabel(
-            texto,
-            text="Administrador",
-            text_color="gray"
-        ).pack(anchor="w")
-
-    
-
-  
-  
-
 
 # =========================
 # RUN APP

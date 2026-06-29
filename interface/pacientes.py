@@ -9,9 +9,8 @@ class Pacientes(ctk.CTk):
         super().__init__()
 
         self.title("HAN - Hospital Agostinho Neto")
-        self.state("zoomed")
-        self.configure(fg_color="#F4F6FB")
-
+        self.after(10, lambda: self.state("zoomed"))        
+        self.configure(fg_color="#F4F6FB")    
         self.ui()
 
     # =========================
