@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from PIL import Image
-from database import consultas_hoje, consultar_prioridade,consultar_agenda_medicos
+from database.database import consultas_hoje, consultar_prioridade,consultar_agenda_medicos
 from tkinter import messagebox
 
 class Dashboard(ctk.CTk):

@@ -118,7 +118,7 @@ class Definicao(ctk.CTk):
                 height=1,
                 fg_color="#35506E"
             ).pack(side="bottom", fill="x", padx=15, pady=(0, 10))
-        def terminar_sessao(self):
+    def terminar_sessao(self):
 
             confirmar = messagebox.askyesno(
                 "Terminar Sessão",

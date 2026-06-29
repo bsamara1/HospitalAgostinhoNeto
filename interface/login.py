@@ -3,7 +3,7 @@ from tkinter import messagebox
 from PIL import Image
 import sqlite3
 from interface.dashboard import Dashboard
-from database import conectar
+from database.database import conectar
 
 
 class Login:

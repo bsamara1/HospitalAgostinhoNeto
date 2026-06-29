@@ -33,9 +33,13 @@ def criar_tabelas():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS pacientes(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome TEXT,
+        nome TEXT NOT NULL,
+        sexo TEXT,
+        idade INTEGER,
         telefone TEXT,
-        nascimento TEXT
+        bi TEXT,
+        nascimento TEXT,
+        estado TEXT
     )
     """)
 
@@ -116,6 +120,7 @@ GROUP BY prioridade
     conn.close()
 
     return dados
+
 def consultar_agenda_medicos():
     conn = conectar()
     cursor = conn.cursor()
@@ -131,4 +136,18 @@ FROM medicos;
 
     conn.close()
 
+    return dados
+
+def listar_pacientes():
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, nome, sexo, idade, telefone, bi, estado
+        FROM pacientes
+        ORDER BY id DESC
+    """)
+
+    dados = cursor.fetchall()
+    conn.close()
     return dados
