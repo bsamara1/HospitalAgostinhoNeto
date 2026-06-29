@@ -134,7 +134,6 @@ class Dashboard(ctk.CTk):
 
             Medicos().mainloop()
 
-            app.mainloop()
         if menu == "Pacientes":
             from interface.pacientes import Pacientes
             Pacientes().mainloop()   

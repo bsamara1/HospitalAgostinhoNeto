@@ -181,66 +181,6 @@ def listar_pacientes():
     return dados
 
 
-<<<<<<< HEAD
-# ==========================================
-# GESTÃO DA FILA DE PRIORIDADES
-# ==========================================
-
-def listar_prioridades(filtro_prioridade="Todos"):
-    """
-    Retorna as consultas ordenadas por gravidade clínica:
-    Urgente -> Alta -> Média -> Baixa.
-    """
-    conn = conectar()
-    cursor = conn.cursor()
-    
-    query = """
-        SELECT 
-            c.id,
-            p.nome AS paciente,
-            c.prioridade,
-            c.hora AS hora_chegada,
-            m.nome AS medico
-        FROM consultas c
-        JOIN pacientes p ON c.paciente = p.id
-        JOIN medicos m ON c.medico = m.id
-    """
-    
-    parametros = []
-    if filtro_prioridade != "Todos":
-        query += " WHERE c.prioridade = ?"
-        parametros.append(filtro_prioridade)
-        
-    # Regra customizada CASE para forçar a ordem clínica correta no banco
-    query += """
-        ORDER BY 
-            CASE c.prioridade
-                WHEN 'Urgente' THEN 1
-                WHEN 'Alta' THEN 2
-                WHEN 'Média' THEN 3
-                WHEN 'Baixa' THEN 4
-                ELSE 5
-            END, c.hora ASC
-    """
-    
-    cursor.execute(query, parametros)
-    dados = cursor.fetchall()
-    conn.close()
-    return dados
-
-
-def atualizar_prioridade_consulta(consulta_id, nova_prioridade):
-    """Atualiza a prioridade de uma consulta específica via ID."""
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("""
-        UPDATE consultas 
-        SET prioridade = ? 
-        WHERE id = ?
-    """, (nova_prioridade, consulta_id))
-    conn.commit()
-    conn.close()
-=======
 def listar_medicos():
     conn = conectar()
     cursor = conn.cursor()
@@ -254,4 +194,3 @@ def listar_medicos():
     dados = cursor.fetchall()
     conn.close()
     return dados
->>>>>>> ca37562200f9d4a2ef9d31735ffb00e513f6def2
