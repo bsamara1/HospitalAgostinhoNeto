@@ -39,7 +39,7 @@ def criar_tabelas():
         telefone TEXT,
         bi TEXT,
         nascimento TEXT,
-        estado TEXT
+        morada TEXT
     )
     """)
 
@@ -143,7 +143,7 @@ def listar_pacientes():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT id, nome, sexo, idade, telefone, bi, estado
+        SELECT id, nome, sexo, idade, telefone, bi, morada
         FROM pacientes
         ORDER BY id DESC
     """)

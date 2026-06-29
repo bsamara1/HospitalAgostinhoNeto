@@ -222,8 +222,8 @@ class Pacientes(ctk.CTk):
         self.nascimento = ctk.CTkEntry(self.janela, placeholder_text="Data nascimento (YYYY-MM-DD)")
         self.nascimento.pack(pady=10, fill="x", padx=20)
 
-        self.estado = ctk.CTkComboBox(self.janela, values=["Ativo", "Inativo"])
-        self.estado.pack(pady=10, fill="x", padx=20)
+        self.morada = ctk.CTkEntry(self.janela,placeholder_text="Morada")
+        self.morada.pack(pady=10, fill="x", padx=20)
 
         ctk.CTkButton(
             self.janela,
@@ -241,7 +241,7 @@ class Pacientes(ctk.CTk):
             INSERT INTO pacientes(
                 nome, sexo, idade,
                 telefone, bi,
-                nascimento, estado
+                nascimento, morada
             )
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (
@@ -251,7 +251,7 @@ class Pacientes(ctk.CTk):
             self.telefone.get(),
             self.bi.get(),
             self.nascimento.get(),
-            self.estado.get()
+            self.morada.get()
         ))
 
         conn.commit()
@@ -391,8 +391,8 @@ class Pacientes(ctk.CTk):
             )
 
         self.body.pack(
-                fill="both",
-                expand=True
+                fill="x",
+                expand=False
             )
 
         self.table_rows()
@@ -403,28 +403,29 @@ class Pacientes(ctk.CTk):
     # =========================
     # CABEÇALHO
     # =========================
+
     def table_header(self):
 
         header = ctk.CTkFrame(
             self.content,
-            fg_color="#F9FAFB",
-            height=58,
+            fg_color="#C9C9C9",
+            height=65,
             corner_radius=0
         )
 
-        header.pack(fill="x")
+        header.pack(fill="x", pady=(0, 2))
         header.pack_propagate(False)
 
         colunas = [
-    ("ID",60),
-    ("Nome",220),
-    ("Sexo",100),
-    ("Idade",80),
-    ("Telefone",150),
-    ("BI",150),
-    ("Estado",100),
-    ("Ações",190)
-]
+            ("ID", 60),
+            ("Nome", 200),
+            ("Sexo", 90),
+            ("Idade", 80),
+            ("Telefone", 160),
+            ("BI", 170),
+            ("Morada", 170),
+            ("Ações", 100)
+        ]
 
         for texto, largura in colunas:
 
@@ -433,42 +434,41 @@ class Pacientes(ctk.CTk):
                 text=texto,
                 width=largura,
                 anchor="w",
-                font=("Segoe UI",13,"bold"),
+                font=("Segoe UI", 13, "bold"),
                 text_color="#475467"
-            ).pack(side="left", padx=15)
+            ).pack(
+                side="left",
+                padx=2
+            )
 
         ctk.CTkFrame(
             self.content,
             height=1,
-            fg_color="#EAECF0"
+            fg_color="#E5E7EB"
         ).pack(fill="x")
 
 
-    # =========================
-# LINHAS
+   # =========================
+# LINHAS DA TABELA
 # =========================
     def table_rows(self):
 
         pacientes = listar_pacientes()
 
-        larguras = [60,220,100,80,150,150,100]
+        larguras = [60, 200, 90, 80, 160, 170, 100]
 
         for i, paciente in enumerate(pacientes):
 
             linha = ctk.CTkFrame(
                 self.body,
                 fg_color="white",
-                height=60,
+                height=68
             )
 
-            linha.pack(
-                fill="x"
-            )
-            linha.configure(corner_radius=0)
-
+            linha.pack(fill="x")
             linha.pack_propagate(False)
 
-            # COLUNAS
+            # Colunas
             for valor, largura in zip(paciente, larguras):
 
                 cel = ctk.CTkFrame(
@@ -488,17 +488,17 @@ class Pacientes(ctk.CTk):
                     cel,
                     text=str(valor),
                     anchor="w",
-                    font=("Segoe UI",13),
+                    font=("Segoe UI", 13),
                     text_color="#344054"
                 ).pack(
                     fill="both",
-                    padx=15
+                    padx=12
                 )
 
-            # COLUNA AÇÕES (fixa)
+            # Área dos botões
             acoes = ctk.CTkFrame(
                 linha,
-                width=190,
+                width=210,
                 fg_color="white"
             )
 
@@ -509,56 +509,61 @@ class Pacientes(ctk.CTk):
 
             acoes.pack_propagate(False)
 
+            # Botão Editar
             ctk.CTkButton(
                 acoes,
                 text="Editar",
-                width=70,
-                height=32,
-                corner_radius=6,
+                width=75,
+                height=34,
+                corner_radius=8,
                 fg_color="#2563EB",
                 hover_color="#1D4ED8",
                 text_color="white",
                 font=("Segoe UI", 12, "bold")
             ).pack(
                 side="left",
-                padx=(10,5),
-                pady=12
+                padx=(10, 5),
+                pady=10
             )
 
+            # Botão Eliminar
             ctk.CTkButton(
                 acoes,
                 text="Eliminar",
-                width=80,
-                height=32,
-                corner_radius=6,
+                width=85,
+                height=34,
+                corner_radius=8,
                 fg_color="#EF4444",
                 hover_color="#DC2626",
-                text_color="#white",
+                text_color="white",
                 font=("Segoe UI", 12, "bold")
             ).pack(
                 side="left",
                 padx=5,
-                pady=12
+                pady=10
             )
 
-            # separador horizontal
-            if i < len(pacientes)-1:
+            # Linha separadora
+            if i < len(pacientes) - 1:
 
                 ctk.CTkFrame(
                     self.body,
                     height=1,
-                    fg_color="#E5E7EB"
+                    fg_color="#F1F5F9"
                 ).pack(
                     fill="x",
                     padx=15
                 )
 
-
     # =========================
     # FOOTER
     # =========================
+    # =========================
+# FOOTER DA TABELA
+# =========================
     def table_footer(self):
 
+        # Linha superior
         ctk.CTkFrame(
             self.content,
             height=1,
@@ -569,7 +574,7 @@ class Pacientes(ctk.CTk):
             self.content,
             fg_color="white",
             height=70,
-            corner_radius=16
+            corner_radius=0
         )
 
         footer.pack(
@@ -581,16 +586,18 @@ class Pacientes(ctk.CTk):
 
         total = len(listar_pacientes())
 
+        # Texto da esquerda
         ctk.CTkLabel(
             footer,
-            text=f"Mostrando 1 a  3 de {total} pacientes",
-            text_color="#667085",
-            font=("Segoe UI",12)
+            text=f"Mostrando 1 a {min(10, total)} de {total} pacientes",
+            font=("Segoe UI", 12),
+            text_color="#667085"
         ).pack(
             side="left",
             padx=20
         )
 
+        # Área da paginação
         paginas = ctk.CTkFrame(
             footer,
             fg_color="transparent"
@@ -601,22 +608,96 @@ class Pacientes(ctk.CTk):
             padx=20
         )
 
-        for i in range(1,4):
+        # Botão <
+        ctk.CTkButton(
+            paginas,
+            text="<",
+            width=36,
+            height=36,
+            corner_radius=8,
+            fg_color="white",
+            border_width=1,
+            border_color="#D0D5DD",
+            text_color="#344054",
+            hover_color="#F9FAFB"
+        ).pack(side="left", padx=3)
 
-            ctk.CTkButton(
-                paginas,
-                text=str(i),
-                width=36,
-                height=36,
-                corner_radius=8,
-                fg_color="#2563EB" if i == 1 else "white",
-                border_width=1,
-                border_color="#E5E7EB",
-                text_color="white" if i == 1 else "#344054"
-            ).pack(
-                side="left",
-                padx=5
-            )
+        # Página 1
+        ctk.CTkButton(
+            paginas,
+            text="1",
+            width=36,
+            height=36,
+            corner_radius=8,
+            fg_color="#2563EB",
+            hover_color="#1D4ED8",
+            text_color="white",
+            font=("Segoe UI", 12, "bold")
+        ).pack(side="left", padx=3)
+
+        # Página 2
+        ctk.CTkButton(
+            paginas,
+            text="2",
+            width=36,
+            height=36,
+            corner_radius=8,
+            fg_color="white",
+            border_width=1,
+            border_color="#D0D5DD",
+            text_color="#344054",
+            hover_color="#F9FAFB"
+        ).pack(side="left", padx=3)
+
+        # Página 3
+        ctk.CTkButton(
+            paginas,
+            text="3",
+            width=36,
+            height=36,
+            corner_radius=8,
+            fg_color="white",
+            border_width=1,
+            border_color="#D0D5DD",
+            text_color="#344054",
+            hover_color="#F9FAFB"
+        ).pack(side="left", padx=3)
+
+        # Reticências
+        ctk.CTkLabel(
+            paginas,
+            text="...",
+            font=("Segoe UI", 12),
+            text_color="#667085"
+        ).pack(side="left", padx=8)
+
+        # Última página
+        ctk.CTkButton(
+            paginas,
+            text="24",
+            width=40,
+            height=36,
+            corner_radius=8,
+            fg_color="white",
+            border_width=1,
+            border_color="#D0D5DD",
+            text_color="#344054",
+            hover_color="#F9FAFB"
+        ).pack(side="left", padx=3)
+
+        # Botão >
+        ctk.CTkButton(
+            paginas,
+            text=">",
+            width=36,
+            height=36,
+            corner_radius=8,
+            fg_color="white",
+            border_width=1,
+            border_color="#D0D5DD",
+            text_color="#344054",
+            hover_color="#F9FAFB"
+        ).pack(side="left", padx=3)
 
 
     # =========================
