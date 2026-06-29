@@ -8,9 +8,8 @@ class Medicos(ctk.CTk):
         super().__init__()
 
         self.title("HAN - Hospital Agostinho Neto")
-        self.state("zoomed")
-        self.configure(fg_color="#F4F6FB")
-
+        self.after(10, lambda: self.state("zoomed"))        
+        self.configure(fg_color="#F4F6FB")    
         self.ui()
 
     # =========================
@@ -75,9 +74,8 @@ class Medicos(ctk.CTk):
             ("Definições", icon("assets/definicao.png")),
         ]
 
-            # MENU
+        # MENU
         for text, ic in menu:
-
             ctk.CTkButton(
                 self.sidebar,
                 text=text,
@@ -95,153 +93,140 @@ class Medicos(ctk.CTk):
                 pady=3
             )
 
-
         # TERMINAR SESSÃO (fora do for)
         ctk.CTkButton(
-                self.sidebar,
-                text="Terminar Sessão",
-                image=icon("assets/sair.png"),
-                compound="left",
-                fg_color="transparent",
-                text_color="#FF6B6B",
-                hover_color="#2A3F5F",
-                anchor="w",
-                height=45,
-                command=self.terminar_sessao
-                ).pack(
-                side="bottom",
-                fill="x",
-                padx=15,
-                pady=20
-                )
+            self.sidebar,
+            text="Terminar Sessão",
+            image=icon("assets/sair.png"),
+            compound="left",
+            fg_color="transparent",
+            text_color="#FF6B6B",
+            hover_color="#2A3F5F",
+            anchor="w",
+            height=45,
+            command=self.terminar_sessao
+        ).pack(
+            side="bottom",
+            fill="x",
+            padx=15,
+            pady=20
+        )
+        
         ctk.CTkFrame(
-                    self.sidebar,
-                    height=1,
-                    fg_color="#35506E"
-                ).pack(side="bottom", fill="x", padx=15, pady=(0, 10))
+            self.sidebar,
+            height=1,
+            fg_color="#35506E"
+        ).pack(side="bottom", fill="x", padx=15, pady=(0, 10))
+
     def terminar_sessao(self):
+        confirmar = messagebox.askyesno(
+            "Terminar Sessão",
+            "Deseja realmente terminar a sessão?"
+        )
 
-                confirmar = messagebox.askyesno(
-                    "Terminar Sessão",
-                    "Deseja realmente terminar a sessão?"
-                )
+        if confirmar:
+            self.destroy()
+            from interface.login import Login
+            root = ctk.CTk()
+            Login(root)
+            root.mainloop()        
 
-                if confirmar:
-                    self.destroy()
-
-                    import customtkinter as ctk
-                    from interface.login import Login
-
-                    root = ctk.CTk()
-
-                    Login(root)
-
-                    root.mainloop()        
     def abrir_menu(self, menu):
-
+        # Fecha a janela atual (Médicos) antes de abrir a próxima
         self.destroy()
 
-        if menu == "Dasboard":
+        # Correção no nome: Estava "Dasboard", mudei para "Painel Principal" para bater com o menu
+        if menu == "Painel Principal":
             from interface.dashboard import Dashboard
+            app_nova = Dashboard()
+            app_nova.state("zoomed")  # Força a nova janela a abrir maximizada
+            app_nova.mainloop()
 
-            Dashboard().mainloop()
-
-            app.mainloop()
-        if menu == "Pacientes":
+        elif menu == "Pacientes":
             from interface.pacientes import Pacientes
-            Pacientes().mainloop()   
+            app_nova = Pacientes()
+            app_nova.state("zoomed")  # Força a nova janela a abrir maximizada
+            app_nova.mainloop()   
         
         elif menu == "Marcações":
             from interface.marcacao import Marcacao
-            Marcacao().mainloop() 
+            app_nova = Marcacao()
+            app_nova.state("zoomed")
+            app_nova.mainloop() 
+
         elif menu == "Reagendamento":
             from interface.reagendamento import Reagendamento
-            Reagendamento().mainloop() 
+            app_nova = Reagendamento()
+            app_nova.state("zoomed")
+            app_nova.mainloop() 
+
         elif menu == "Cancelamento":
             from interface.cancelamento import Cancelamento
-            Cancelamento().mainloop() 
+            app_nova = Cancelamento()
+            app_nova.state("zoomed")
+            app_nova.mainloop() 
+
         elif menu == "Triagem":
             from interface.triagem import Triagem
-            Triagem().mainloop() 
+            app_nova = Triagem()
+            app_nova.state("zoomed")
+            app_nova.mainloop() 
+
         elif menu == "Prioridades":
             from interface.prioridades import Prioridades
-            Prioridades().mainloop() 
+            app_nova = Prioridades()
+            app_nova.state("zoomed")
+            app_nova.mainloop() 
+
         elif menu == "Relatórios":
             from interface.relatorios import Relatorios
-            Relatorios().mainloop() 
+            app_nova = Relatorios()
+            app_nova.state("zoomed")
+            app_nova.mainloop() 
+
         elif menu == "Definições":
             from interface.definicao import Definicao
-            Definicao().mainloop() 
+            app_nova = Definicao()
+            app_nova.state("zoomed")
+            app_nova.mainloop() 
+
     # =========================
     # MAIN AREA
     # =========================
     def main_ui(self):
-
         self.main = ctk.CTkFrame(self.container, fg_color="#F4F6FB")
         self.main.pack(side="left", fill="both", expand=True)
-
         self.topbar()
 
     # =========================
     # TOPBAR
     # =========================
     def topbar(self):
-
         topbar = ctk.CTkFrame(self.main, fg_color="#F4F6FB", height=60)
         topbar.pack(fill="x", padx=20, pady=10)
 
         ctk.CTkLabel(
             topbar,
-            text="Medicos",
+            text="Médicos",
             font=("Segoe UI", 22, "bold"),
             text_color="#0B2A4A"
-        ).pack(side="left",padx=20)
+        ).pack(side="left", padx=20)
+        
         linha = ctk.CTkFrame(
             self.main,
             height=1,
             fg_color="#D8DEE9",
             corner_radius=0
         )
-
-        linha.pack(
-            fill="x",
-            pady=(5, 0)
-        )
+        linha.pack(fill="x", pady=(5, 0))
 
         avatar = ctk.CTkImage(
-        Image.open("assets/perfil.png"),
-        size=(42,42)
+            Image.open("assets/perfil.png"),
+            size=(42, 42)
         )
 
         user = ctk.CTkFrame(topbar, fg_color="transparent")
         user.pack(side="right")
-
-        ctk.CTkLabel(
-            user,
-            image=avatar,
-            text=""
-        ).pack(side="left", padx=10)
-
-        texto = ctk.CTkFrame(user, fg_color="transparent")
-        texto.pack(side="left")
-
-        ctk.CTkLabel(
-            texto,
-            text="Administrador",
-            font=("Segoe UI",15,"bold")
-        ).pack(anchor="w")
-
-        ctk.CTkLabel(
-            texto,
-            text="Administrador",
-            text_color="gray"
-        ).pack(anchor="w")
-
-    
-
-  
-  
-
 
 # =========================
 # RUN APP
