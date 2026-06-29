@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from PIL import Image
 from tkinter import messagebox
+from database.database import conectar,listar_medicos
 
 class Medicos(ctk.CTk):
 
@@ -113,40 +114,40 @@ class Medicos(ctk.CTk):
         )
         
         ctk.CTkFrame(
-            self.sidebar,
-            height=1,
-            fg_color="#35506E"
-        ).pack(side="bottom", fill="x", padx=15, pady=(0, 10))
-
+                    self.sidebar,
+                    height=1,
+                    fg_color="#35506E"
+                ).pack(side="bottom", fill="x", padx=15, pady=(0, 10))
     def terminar_sessao(self):
         confirmar = messagebox.askyesno(
             "Terminar Sessão",
             "Deseja realmente terminar a sessão?"
         )
 
-        if confirmar:
-            self.destroy()
-            from interface.login import Login
-            root = ctk.CTk()
-            Login(root)
-            root.mainloop()        
+                if confirmar:
+                    self.destroy()
 
+                    import customtkinter as ctk
+                    from interface.login import Login
+
+                    root = ctk.CTk()
+
+                    Login(root)
+
+                    root.mainloop()        
     def abrir_menu(self, menu):
         # Fecha a janela atual (Médicos) antes de abrir a próxima
         self.destroy()
 
-        # Correção no nome: Estava "Dasboard", mudei para "Painel Principal" para bater com o menu
-        if menu == "Painel Principal":
+        if menu == "Dasboard":
             from interface.dashboard import Dashboard
-            app_nova = Dashboard()
-            app_nova.state("zoomed")  # Força a nova janela a abrir maximizada
-            app_nova.mainloop()
 
-        elif menu == "Pacientes":
+            Dashboard().mainloop()
+
+            app.mainloop()
+        if menu == "Pacientes":
             from interface.pacientes import Pacientes
-            app_nova = Pacientes()
-            app_nova.state("zoomed")  # Força a nova janela a abrir maximizada
-            app_nova.mainloop()   
+            Pacientes().mainloop()   
         
         elif menu == "Marcações":
             from interface.marcacao import Marcacao
@@ -186,47 +187,331 @@ class Medicos(ctk.CTk):
 
         elif menu == "Definições":
             from interface.definicao import Definicao
-            app_nova = Definicao()
-            app_nova.state("zoomed")
-            app_nova.mainloop() 
-
+            Definicao().mainloop() 
     # =========================
     # MAIN AREA
     # =========================
     def main_ui(self):
+
         self.main = ctk.CTkFrame(self.container, fg_color="#F4F6FB")
         self.main.pack(side="left", fill="both", expand=True)
+
         self.topbar()
 
     # =========================
     # TOPBAR
     # =========================
     def topbar(self):
+
         topbar = ctk.CTkFrame(self.main, fg_color="#F4F6FB", height=60)
         topbar.pack(fill="x", padx=20, pady=10)
 
         ctk.CTkLabel(
             topbar,
-            text="Médicos",
+            text="Medicos",
             font=("Segoe UI", 22, "bold"),
             text_color="#0B2A4A"
-        ).pack(side="left", padx=20)
-        
+        ).pack(side="left",padx=20)
         linha = ctk.CTkFrame(
             self.main,
-            height=1,
-            fg_color="#D8DEE9",
+            fg_color="transparent"
+        )
+        filtros.pack(fill="x", padx=35, pady=(0,20))
+
+        self.txt_pesquisa = ctk.CTkEntry(
+            filtros,
+            placeholder_text="🔍 Pesquisar por nome, email ou telefone...",
+            height=45,
+            corner_radius=8,
+            border_width=1,
+            font=("Segoe UI",14)
+        )
+        self.txt_pesquisa.pack(
+            side="left",
+            fill="x",
+            expand=True
+        )
+
+        self.combo_estado = ctk.CTkComboBox(
+            filtros,
+            values=[
+                "Todos",
+                "Disponivel",
+                "Ocupado",
+                "Ferias"
+            ],
+            width=180,
+            height=45,
+            corner_radius=8
+        )
+
+        self.combo_estado.pack(
+            side="left",
+            padx=(15,0)
+        )
+
+        self.combo_estado.set("Todos")
+ # =========================
+# CARTÃO DA TABELA
+# =========================
+
+    def table_area(self):
+
+        # CARD EXTERNO (contorno completo)
+        self.card = ctk.CTkFrame(
+        self.main,
+        fg_color="white",
+        corner_radius=12,
+        border_width=1,
+        border_color="#E4E7EC"
+    )
+
+        self.card.pack(
+            fill="both",
+            expand=True,
+            padx=35,
+            pady=(0,25)
+        )
+
+        self.content = ctk.CTkFrame(
+            self.card,
+            fg_color="white",
+            corner_radius=12
+        )
+
+        self.content.pack(fill="both", expand=True)
+
+        self.table_header()
+
+        self.body = ctk.CTkScrollableFrame(
+                self.content,
+                fg_color="white",
+                corner_radius=0
+            )
+
+        self.body.pack(
+                fill="x",
+                expand=False
+            )
+
+        self.table_rows()
+
+        self.table_footer()
+
+
+    # =========================
+    # CABEÇALHO
+    # =========================
+
+    def table_header(self):
+
+        header = ctk.CTkFrame(
+            self.content,
+            fg_color="#C9C9C9",
+            height=65,
             corner_radius=0
         )
-        linha.pack(fill="x", pady=(5, 0))
+
+        header.pack(fill="x", pady=(0, 2))
+        header.pack_propagate(False)
+
+        colunas = [
+            ("ID", 60),
+            ("Nome", 180),
+            ("email", 90),
+            ("Especialidade", 100),
+            ("Telefone", 160),
+            ("Estado", 170),
+            ("Ações", 100)
+        ]
+
+        for texto, largura in colunas:
+
+            ctk.CTkLabel(
+                header,
+                text=texto,
+                width=largura,
+                anchor="w",
+                font=("Segoe UI", 13, "bold"),
+                text_color="#475467"
+            ).pack(
+                side="left",
+                padx=2
+            )
+
+        ctk.CTkFrame(
+            self.content,
+            height=1,
+            fg_color="#E5E7EB"
+        ).pack(fill="x")
+
+
+   # =========================
+# LINHAS DA TABELA
+# =========================
+    def table_rows(self):
+
+        Medicos = listar_medicos()
+
+        larguras = [60, 180, 90, 100, 160, 170, 100]
+
+        for i, medico in enumerate(Medicos):
+
+            linha = ctk.CTkFrame(
+                self.body,
+                fg_color="white",
+                height=68
+            )
+
+            linha.pack(fill="x")
+            linha.pack_propagate(False)
+
+            # Colunas
+            for valor, largura in zip(medico, larguras):
+
+                cel = ctk.CTkFrame(
+                    linha,
+                    width=largura,
+                    fg_color="white"
+                )
+
+                cel.pack(
+                    side="left",
+                    fill="y"
+                )
+
+                cel.pack_propagate(False)
+
+                ctk.CTkLabel(
+                    cel,
+                    text=str(valor),
+                    anchor="w",
+                    font=("Segoe UI", 13),
+                    text_color="#344054"
+                ).pack(
+                    fill="both",
+                    padx=12
+                )
+
+            # Área dos botões
+            acoes = ctk.CTkFrame(
+                linha,
+                width=210,
+                fg_color="white"
+            )
+
+            acoes.pack(
+                side="left",
+                fill="y"
+            )
+
+            acoes.pack_propagate(False)
+
+            # Botão Editar
+            ctk.CTkButton(
+                acoes,
+                text="Editar",
+                width=75,
+                height=34,
+                corner_radius=8,
+                fg_color="#2563EB",
+                hover_color="#1D4ED8",
+                text_color="white",
+                font=("Segoe UI", 12, "bold")
+            ).pack(
+                side="left",
+                padx=(10, 5),
+                pady=10
+            )
+
+            # Botão Eliminar
+            ctk.CTkButton(
+                acoes,
+                text="Eliminar",
+                width=85,
+                height=34,
+                corner_radius=8,
+                fg_color="#EF4444",
+                hover_color="#DC2626",
+                text_color="white",
+                font=("Segoe UI", 12, "bold")
+            ).pack(
+                side="left",
+                padx=5,
+                pady=10
+            )
+
+            # Linha separadora
+            if i < len(Medicos) - 1:
+
+                ctk.CTkFrame(
+                    self.body,
+                    height=1,
+                    fg_color="#F1F5F9"
+                ).pack(
+                    fill="x",
+                    padx=15
+                )
+
+    # =========================
+    # FOOTER
+    # =========================
+
+    def table_footer(self):
+
+        # Linha superior
+        ctk.CTkFrame(
+            self.content,
+            height=1,
+            fg_color="#E5E7EB"
+        ).pack(fill="x")
+
+        footer = ctk.CTkFrame(
+            self.content,
+            fg_color="white",
+            height=70,
+            corner_radius=0
+        )
+
+        linha.pack(
+            fill="x",
+            pady=(5, 0)
+        )
 
         avatar = ctk.CTkImage(
-            Image.open("assets/perfil.png"),
-            size=(42, 42)
+        Image.open("assets/perfil.png"),
+        size=(42,42)
         )
 
         user = ctk.CTkFrame(topbar, fg_color="transparent")
         user.pack(side="right")
+
+        ctk.CTkLabel(
+            user,
+            image=avatar,
+            text=""
+        ).pack(side="left", padx=10)
+
+        texto = ctk.CTkFrame(user, fg_color="transparent")
+        texto.pack(side="left")
+
+        ctk.CTkLabel(
+            texto,
+            text="Administrador",
+            font=("Segoe UI",15,"bold")
+        ).pack(anchor="w")
+
+        ctk.CTkLabel(
+            texto,
+            text="Administrador",
+            text_color="gray"
+        ).pack(anchor="w")
+
+    
+
+  
+  
+
 
 # =========================
 # RUN APP

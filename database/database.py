@@ -45,8 +45,10 @@ def criar_tabelas():
     CREATE TABLE IF NOT EXISTS medicos(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nome TEXT,
+        email TEXT,
         especialidade TEXT,
-        horario TEXT
+        telefone TEXT,
+        estado TEXT
     )
     """)
 
@@ -179,6 +181,7 @@ def listar_pacientes():
     return dados
 
 
+<<<<<<< HEAD
 # ==========================================
 # GESTÃO DA FILA DE PRIORIDADES
 # ==========================================
@@ -237,3 +240,18 @@ def atualizar_prioridade_consulta(consulta_id, nova_prioridade):
     """, (nova_prioridade, consulta_id))
     conn.commit()
     conn.close()
+=======
+def listar_medicos():
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, nome, email, especialidade, telefone, estado
+        FROM medicos
+        ORDER BY id DESC
+    """)
+
+    dados = cursor.fetchall()
+    conn.close()
+    return dados
+>>>>>>> ca37562200f9d4a2ef9d31735ffb00e513f6def2
