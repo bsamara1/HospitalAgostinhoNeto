@@ -29,8 +29,10 @@ def criar_tabelas():
     CREATE TABLE IF NOT EXISTS medicos(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nome TEXT,
+        email TEXT,
         especialidade TEXT,
-        horario TEXT
+        telefone TEXT,
+        estado TEXT
     )
     """)
 
@@ -149,6 +151,21 @@ def listar_pacientes():
     cursor.execute("""
         SELECT id, nome, sexo, idade, telefone, bi, morada
         FROM pacientes
+        ORDER BY id DESC
+    """)
+
+    dados = cursor.fetchall()
+    conn.close()
+    return dados
+
+
+def listar_medicos():
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, nome, email, especialidade, telefone, estado
+        FROM medicos
         ORDER BY id DESC
     """)
 
