@@ -1,239 +1,118 @@
 import customtkinter as ctk
-from PIL import Image
-from tkinter import messagebox
+from tkinter import messagebox, simpledialog
+from database.database import listar_prioridades, atualizar_prioridade_consulta
+from interface._base import _topbar_base
 
-class Prioridades(ctk.CTk):
 
-    def __init__(self):
-        super().__init__()
+class PrioridadesContent:
 
-        self.title("HAN - Hospital Agostinho Neto")
-        self.state("zoomed")
-        self.configure(fg_color="#F4F6FB")
+    def __init__(self, parent):
+        self.parent = parent
+        self.filtro_atual = "Todos"
+        self.id_consulta_selecionado = None
+        self.frames_linhas = {}
 
-        self.ui()
-
-    # =========================
-    # UI PRINCIPAL
-    # =========================
-    def ui(self):
-
-        self.container = ctk.CTkFrame(self, fg_color="#F4F6FB")
-        self.container.pack(fill="both", expand=True)
-
-        self.sidebar_ui()
+        _topbar_base(parent, "Prioridades")
         self.main_ui()
 
-    # =========================
-    # SIDEBAR
-    # =========================
-    def sidebar_ui(self):
-
-        self.sidebar = ctk.CTkFrame(
-            self.container,
-            width=240,
-            fg_color="#0B2A4A"
-        )
-        self.sidebar.pack(side="left", fill="y")
-        self.sidebar.pack_propagate(False)
-
-        logo = ctk.CTkImage(Image.open("assets/logo.png"), size=(40, 40))
-
-        logo_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
-        logo_frame.pack(pady=(25, 35), padx=20, fill="x")
-
-        ctk.CTkLabel(logo_frame, image=logo, text="").grid(row=0, column=0, rowspan=2, padx=10)
-
-        ctk.CTkLabel(
-            logo_frame,
-            text="HAN",
-            font=("Segoe UI", 20, "bold"),
-            text_color="white"
-        ).grid(row=0, column=1, sticky="w")
-
-        ctk.CTkLabel(
-            logo_frame,
-            text="Hospital Agostinho Neto",
-            font=("Segoe UI", 13),
-            text_color="#D6E4F0"
-        ).grid(row=1, column=1, sticky="w")
-
-        # ICONS
-        def icon(path):
-            return ctk.CTkImage(Image.open(path), size=(20, 20))
-
-        menu = [
-            ("Painel Principal", icon("assets/casa.png")),
-            ("Pacientes", icon("assets/utilizadores.png")),
-            ("Médicos", icon("assets/perfil.png")),
-            ("Marcações", icon("assets/agendar.png")),
-            ("Reagendamento", icon("assets/reagendar.png")),
-            ("Cancelamento", icon("assets/cancelar.png")),
-            ("Triagem", icon("assets/triagem.png")),
-            ("Prioridades", icon("assets/prioridade.png")),
-            ("Relatórios", icon("assets/relatorio.png")),
-            ("Definições", icon("assets/definicao.png")),
-        ]
-
-        for text, ic in menu:
-                ctk.CTkButton(
-                    self.sidebar,
-                    text=text,
-                    image=ic,
-                    compound="left",
-                    fg_color="transparent",
-                    text_color="white",
-                    anchor="w",
-                    hover_color="#11457B",
-                    height=45,
-                    command=lambda nome=text: self.abrir_menu(nome),
-                ).pack(fill="x", padx=15, pady=3)
-
-        ctk.CTkButton(
-                    self.sidebar,
-                    text="Terminar Sessão",
-                    image=icon("assets/sair.png"),
-                    compound="left",
-                    fg_color="transparent",
-                    text_color="#FF6B6B",
-                    hover_color="#2A3F5F",
-                    anchor="w",
-                    height=45,
-                    
-                    command=self.terminar_sessao
-                ).pack(side="bottom", fill="x", padx=15, pady=20)
-        ctk.CTkFrame(
-                    self.sidebar,
-                    height=1,
-                    fg_color="#35506E"
-                ).pack(side="bottom", fill="x", padx=15, pady=(0, 10))
-    def terminar_sessao(self):
-
-                confirmar = messagebox.askyesno(
-                    "Terminar Sessão",
-                    "Deseja realmente terminar a sessão?"
-                )
-
-                if confirmar:
-                    self.destroy()
-
-                    import customtkinter as ctk
-                    from interface.login import Login
-
-                    root = ctk.CTk()
-
-                    Login(root)
-
-                    root.mainloop()
-    def abrir_menu(self, menu):
-
-        self.destroy()
-
-        if menu == "Médicos":
-            from interface.medicos import Medicos
-
-            Medicos().mainloop()
-
-            app.mainloop()
-        if menu == "Pacientes":
-            from interface.pacientes import Pacientes
-            Pacientes().mainloop()   
-        
-        elif menu == "Marcações":
-            from interface.marcacao import Marcacao
-            Marcacao().mainloop() 
-        elif menu == "Reagendamento":
-            from interface.reagendamento import Reagendamento
-            Reagendamento().mainloop() 
-        elif menu == "Cancelamento":
-            from interface.cancelamento import Cancelamento
-            Cancelamento().mainloop() 
-        elif menu == "Triagem":
-            from interface.triagem import Triagem
-            Triagem().mainloop() 
-        elif menu == "Dashboard":
-            from interface.dashboard import Dashboard
-            Dashboard().mainloop() 
-        elif menu == "Relatórios":
-            from interface.relatorios import Relatorios
-            Relatorios().mainloop() 
-        elif menu == "Definições":
-            from interface.definicao import Definicao
-            Definicao().mainloop() 
-    # =========================
-    # MAIN AREA
-    # =========================
     def main_ui(self):
+        frame = ctk.CTkFrame(self.parent, fg_color="transparent")
+        frame.pack(fill="both", expand=True, padx=35, pady=(10, 25))
 
-        self.main = ctk.CTkFrame(self.container, fg_color="#F4F6FB")
-        self.main.pack(side="left", fill="both", expand=True)
+        ctk.CTkLabel(frame, text="Fila de Prioridades", font=("Segoe UI", 30, "bold"),
+                     text_color="#183153").pack(anchor="w")
 
-        self.topbar()
+        toolbar = ctk.CTkFrame(frame, fg_color="transparent")
+        toolbar.pack(fill="x", pady=(20, 15))
 
-    # =========================
-    # TOPBAR
-    # =========================
-    def topbar(self):
-
-        topbar = ctk.CTkFrame(self.main, fg_color="#F4F6FB", height=60)
-        topbar.pack(fill="x", padx=20, pady=10)
-
-        ctk.CTkLabel(
-            topbar,
-            text="Prioridades",
-            font=("Segoe UI", 22, "bold"),
-            text_color="#0B2A4A"
-        ).pack(side="left",padx=20)
-        linha = ctk.CTkFrame(
-            self.main,
-            height=1,
-            fg_color="#D8DEE9",
-            corner_radius=0
+        self.filtro_switch = ctk.CTkSegmentedButton(
+            toolbar, values=["Todos", "Urgente", "Alta", "Média", "Baixa"],
+            height=40, font=("Segoe UI", 12, "bold"), command=self.filtrar,
         )
+        self.filtro_switch.set("Todos")
+        self.filtro_switch.pack(side="left")
 
-        linha.pack(
-            fill="x",
-            pady=(5, 0)
-        )
+        ctk.CTkButton(toolbar, text="🔄 Atualizar Lista", width=140, height=40,
+                      fg_color="#10B981", hover_color="#059669",
+                      font=("Segoe UI", 12, "bold"), command=self.refresh_table).pack(side="right", padx=5)
 
-        avatar = ctk.CTkImage(
-        Image.open("assets/perfil.png"),
-        size=(42,42)
-        )
+        ctk.CTkButton(toolbar, text="✏️ Alterar Prioridade", width=160, height=40,
+                      fg_color="#2563EB", hover_color="#1E4FD8",
+                      font=("Segoe UI", 12, "bold"), command=self.alterar_prioridade).pack(side="right", padx=5)
 
-        user = ctk.CTkFrame(topbar, fg_color="transparent")
-        user.pack(side="right")
+        self._table_parent = frame
+        self.table_area()
 
-        ctk.CTkLabel(
-            user,
-            image=avatar,
-            text=""
-        ).pack(side="left", padx=10)
+    def table_area(self):
+        self.card = ctk.CTkFrame(self._table_parent, fg_color="white", corner_radius=12,
+                                  border_width=1, border_color="#E4E7EC")
+        self.card.pack(fill="both", expand=True)
 
-        texto = ctk.CTkFrame(user, fg_color="transparent")
-        texto.pack(side="left")
+        t_header = ctk.CTkFrame(self.card, fg_color="#EAEFF8", height=50, corner_radius=0)
+        t_header.pack(fill="x")
+        t_header.pack_propagate(False)
 
-        ctk.CTkLabel(
-            texto,
-            text="Administrador",
-            font=("Segoe UI",15,"bold")
-        ).pack(anchor="w")
+        for texto, largura in [("ID", 60), ("Paciente", 220), ("Prioridade", 130), ("Hora de Chegada", 160), ("Médico", 200)]:
+            ctk.CTkLabel(t_header, text=texto, width=largura, anchor="w",
+                         font=("Segoe UI", 13, "bold"), text_color="#183153").pack(side="left", padx=15)
 
-        ctk.CTkLabel(
-            texto,
-            text="Administrador",
-            text_color="gray"
-        ).pack(anchor="w")
+        self.body = ctk.CTkScrollableFrame(self.card, fg_color="white", corner_radius=0)
+        self.body.pack(fill="both", expand=True)
+        self.table_rows()
 
-    
+    def table_rows(self):
+        for w in self.body.winfo_children():
+            w.destroy()
 
-  
-  
+        dados = listar_prioridades(self.filtro_atual)
+        self.frames_linhas = {}
 
+        if not dados:
+            ctk.CTkLabel(self.body, text="Nenhum paciente em espera nesta categoria.",
+                         font=("Segoe UI", 14), text_color="gray").pack(pady=40)
+            return
 
-# =========================
-# RUN APP
-# =========================
-if __name__ == "__main__":
-    app = Prioridades()
-    app.mainloop()
+        for c_id, paciente, prioridade, hora, medico in dados:
+            linha = ctk.CTkFrame(self.body, fg_color="white", height=55, cursor="hand2")
+            linha.pack(fill="x", pady=2)
+            linha.pack_propagate(False)
+            linha.bind("<Button-1>", lambda e, id=c_id: self.selecionar_linha(id))
+
+            cor_tag = {"Urgente": "#EF4444", "Alta": "#F59E0B", "Média": "#3B82F6", "Baixa": "#10B981"}.get(prioridade, "gray")
+
+            for val, larg in [(f"#{c_id}", 60), (paciente, 220), (prioridade, 130), (hora, 160), (medico, 200)]:
+                lbl = ctk.CTkLabel(linha, text=str(val), width=larg, anchor="w", font=("Segoe UI", 13))
+                lbl.pack(side="left", padx=15, pady=12)
+                lbl.bind("<Button-1>", lambda e, id=c_id: self.selecionar_linha(id))
+                if val == prioridade:
+                    lbl.configure(text_color=cor_tag, font=("Segoe UI", 13, "bold"))
+
+            self.frames_linhas[c_id] = linha
+
+    def selecionar_linha(self, consulta_id):
+        if self.id_consulta_selecionado in self.frames_linhas:
+            self.frames_linhas[self.id_consulta_selecionado].configure(fg_color="white")
+        self.id_consulta_selecionado = consulta_id
+        self.frames_linhas[consulta_id].configure(fg_color="#E0EBF7")
+
+    def filtrar(self, valor):
+        self.filtro_atual = valor
+        self.table_rows()
+
+    def alterar_prioridade(self):
+        if not self.id_consulta_selecionado:
+            messagebox.showwarning("Aviso", "Por favor, selecione um paciente da tabela clicando em cima da linha.")
+            return
+        nova = simpledialog.askstring("Alterar Prioridade",
+                                      "Escreva a nova prioridade:\n(Urgente, Alta, Média, Baixa)")
+        if nova and nova.capitalize() in ["Urgente", "Alta", "Média", "Baixa"]:
+            atualizar_prioridade_consulta(self.id_consulta_selecionado, nova.capitalize())
+            self.refresh_table()
+            messagebox.showinfo("Sucesso", "Prioridade atualizada com sucesso!")
+        elif nova:
+            messagebox.showerror("Erro", "Prioridade inválida! Escolha entre Urgente, Alta, Média ou Baixa.")
+
+    def refresh_table(self):
+        self.id_consulta_selecionado = None
+        self.card.destroy()
+        self.table_area()
