@@ -1,0 +1,12 @@
+# Ambiente virtual
+venv/
+
+# Cache do Python
+__pycache__/
+*.pyc
+
+# Base de dados SQLite (opcional, se não quiser partilhar)
+*.db
+
+# Configurações do VS Code
+.vscode/
