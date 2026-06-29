@@ -2,7 +2,7 @@ import customtkinter as ctk
 from PIL import Image
 from tkinter import messagebox
 
-class Relatorios(ctk.CTk):
+class Definicao(ctk.CTk):
 
     def __init__(self):
         super().__init__()
@@ -75,7 +75,7 @@ class Relatorios(ctk.CTk):
             ("Definições", icon("assets/definicao.png")),
         ]
 
-            # MENU
+        # MENU
         for text, ic in menu:
 
             ctk.CTkButton(
@@ -98,45 +98,44 @@ class Relatorios(ctk.CTk):
 
         # TERMINAR SESSÃO (fora do for)
         ctk.CTkButton(
-                self.sidebar,
-                text="Terminar Sessão",
-                image=icon("assets/sair.png"),
-                compound="left",
-                fg_color="transparent",
-                text_color="#FF6B6B",
-                hover_color="#2A3F5F",
-                anchor="w",
-                height=45,
-                command=self.terminar_sessao
-                ).pack(
-                side="bottom",
-                fill="x",
-                padx=15,
-                pady=20
-                )
+            self.sidebar,
+            text="Terminar Sessão",
+            image=icon("assets/sair.png"),
+            compound="left",
+            fg_color="transparent",
+            text_color="#FF6B6B",                hover_color="#2A3F5F",
+            anchor="w",
+            height=45,
+            command=self.terminar_sessao
+            ).pack(
+            side="bottom",
+            fill="x",
+            padx=15,
+            pady=20
+            )
         ctk.CTkFrame(
-                    self.sidebar,
-                    height=1,
-                    fg_color="#35506E"
-                ).pack(side="bottom", fill="x", padx=15, pady=(0, 10))
-    def terminar_sessao(self):
+                self.sidebar,
+                height=1,
+                fg_color="#35506E"
+            ).pack(side="bottom", fill="x", padx=15, pady=(0, 10))
+        def terminar_sessao(self):
 
-                confirmar = messagebox.askyesno(
-                    "Terminar Sessão",
-                    "Deseja realmente terminar a sessão?"
-                )
+            confirmar = messagebox.askyesno(
+                "Terminar Sessão",
+                "Deseja realmente terminar a sessão?"
+            )
 
-                if confirmar:
-                    self.destroy()
+            if confirmar:
+                self.destroy()
 
-                    import customtkinter as ctk
-                    from interface.login import Login
+                import customtkinter as ctk
+                from interface.login import Login
 
-                    root = ctk.CTk()
+                root = ctk.CTk()
 
-                    Login(root)
+                Login(root)
 
-                    root.mainloop()
+                root.mainloop()
     def abrir_menu(self, menu):
 
         self.destroy()
@@ -166,12 +165,12 @@ class Relatorios(ctk.CTk):
         elif menu == "Prioridades":
             from interface.prioridades import Prioridades
             Prioridades().mainloop() 
+        elif menu == "Relatórios":
+            from interface.relatorios import Relatorios
+            Relatorios().mainloop() 
         elif menu == "Dashboard":
             from interface.dashboard import Dashboard
             Dashboard().mainloop() 
-        elif menu == "Definições":
-            from interface.definicao import Definicao
-            Definicao().mainloop() 
     # =========================
     # MAIN AREA
     # =========================
@@ -192,7 +191,7 @@ class Relatorios(ctk.CTk):
 
         ctk.CTkLabel(
             topbar,
-            text="Relatorios",
+            text="Marcacao",
             font=("Segoe UI", 22, "bold"),
             text_color="#0B2A4A"
         ).pack(side="left",padx=20)
@@ -237,10 +236,15 @@ class Relatorios(ctk.CTk):
             text_color="gray"
         ).pack(anchor="w")
 
+    
+
+  
+  
+
 
 # =========================
 # RUN APP
 # =========================
 if __name__ == "__main__":
-    app = Relatorios()
+    app = Definicao()
     app.mainloop()
