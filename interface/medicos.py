@@ -46,15 +46,37 @@ class MedicosContent:
     def guardar_medico(self):
         conn = conectar()
         cursor = conn.cursor()
+
+        nome = self.nome.get()
+        email = self.email.get()
+        especialidade = self.especialidade.get()
+        telefone = self.telefone.get()
+        estado = self.estado.get()
+
+        # 1. Criar médico
         cursor.execute("""
             INSERT INTO medicos(nome, email, especialidade, telefone, estado)
             VALUES (?, ?, ?, ?, ?)
-        """, (self.nome.get(), self.email.get(), self.especialidade.get(),
-              self.telefone.get(), self.estado.get()))
+        """, (nome, email, especialidade, telefone, estado))
+
+        # 2. Criar login automaticamente
+        username = email.split("@")[0]   # exemplo: joao@gmail -> joao
+        senha = "1234"                   # senha padrão (podes mudar depois)
+
+        cursor.execute("""
+            INSERT INTO utilizadores(nome, username, senha, perfil, email, telefone)
+            VALUES (?, ?, ?, 'Medico', ?, ?)
+        """, (nome, username, senha, email, telefone))
+
         conn.commit()
         conn.close()
+
         self._form_janela.destroy()
-        messagebox.showinfo("Sucesso", "Médico adicionado com sucesso!")
+        messagebox.showinfo(
+            "Sucesso",
+            f"Médico criado!\nLogin: {username}\nSenha: {senha}"
+        )
+
         self.refresh_table()
 
     def header(self):
