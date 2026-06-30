@@ -12,7 +12,6 @@ MENUS = [
     ("Cancelamento", "assets/cancelar.png"),
     ("Triagem", "assets/triagem.png"),
     ("Prioridades", "assets/prioridade.png"),
-    ("Relatórios", "assets/relatorio.png"),
     ("Definições", "assets/definicao.png"),
 ]
 
@@ -208,10 +207,6 @@ class MainContent:
         elif menu_name == "Prioridades":
             from interface.prioridades import PrioridadesContent
             PrioridadesContent(self.content_frame)
-
-        elif menu_name == "Relatórios":
-            from interface.relatorios import RelatoriosContent
-            RelatoriosContent(self.content_frame)
 
         elif menu_name == "Definições":
             from interface.definicao import DefinicaoContent

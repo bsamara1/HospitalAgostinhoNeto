@@ -244,6 +244,7 @@ class LoginContent:
 
             id_user, nome, username, perfil, email, telefone, paciente_id = user
 
+
             sessao = {
                 "id": id_user,
                 "nome": nome,
@@ -253,11 +254,6 @@ class LoginContent:
                 "telefone": telefone,
                 "paciente_id": paciente_id,
             }
-
-            messagebox.showinfo(
-                "Sucesso",
-                f"Bem-vindo {nome}"
-            )
 
             # Envia a sessão para a aplicação principal
             if self.on_success:
