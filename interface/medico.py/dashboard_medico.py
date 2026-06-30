@@ -1,12 +1,12 @@
 import customtkinter as ctk
-from interface.dashboard_base import DashboardBase
+from interface.dashboard_admin import DashboardAdmin
 from database.database import consultas_hoje, consultar_prioridade, consultar_agenda_medicos
 
 
-class DashboardAdmin(DashboardBase):
+class DashboardContent(DashboardAdmin):
 
     def __init__(self, parent):
-        super().__init__(parent, "Painel Administrativo")
+        super().__init__(parent, "Painel Principal")
 
     # =========================
     # CARDS
@@ -20,7 +20,7 @@ class DashboardAdmin(DashboardBase):
         ]
 
     # =========================
-    # TABLE
+    # TABELA
     # =========================
     def table_title(self):
         return "Consultas de Hoje"
@@ -49,10 +49,17 @@ class DashboardAdmin(DashboardBase):
         row = ctk.CTkFrame(box, fg_color="#F4F6FB")
         row.pack(fill="x", padx=15, pady=5)
 
-        ctk.CTkLabel(row, text=prioridade,
-                     width=120, font=("Segoe UI", 13, "bold")).pack(side="left", padx=10)
+        ctk.CTkLabel(
+            row,
+            text=prioridade,
+            width=120,
+            font=("Segoe UI", 13, "bold")
+        ).pack(side="left", padx=10)
 
-        ctk.CTkLabel(row, text=f"{total} consultas").pack(side="left")
+        ctk.CTkLabel(
+            row,
+            text=f"{total} consultas"
+        ).pack(side="left")
 
     # =========================
     # RIGHT
@@ -69,11 +76,20 @@ class DashboardAdmin(DashboardBase):
         card = ctk.CTkFrame(box, fg_color="#F4F6FB", corner_radius=8)
         card.pack(fill="x", padx=15, pady=6)
 
-        ctk.CTkLabel(card, text=nome,
-                     font=("Segoe UI", 13, "bold")).pack(anchor="w", padx=10)
+        ctk.CTkLabel(
+            card,
+            text=nome,
+            font=("Segoe UI", 13, "bold")
+        ).pack(anchor="w", padx=10, pady=(8, 0))
 
-        ctk.CTkLabel(card, text=especialidade,
-                     text_color="gray").pack(anchor="w", padx=10)
+        ctk.CTkLabel(
+            card,
+            text=especialidade,
+            text_color="gray"
+        ).pack(anchor="w", padx=10)
 
-        ctk.CTkLabel(card, text=horario,
-                     text_color="#2E86C1").pack(anchor="w", padx=10, pady=(0, 8))
+        ctk.CTkLabel(
+            card,
+            text=horario,
+            text_color="#2E86C1"
+        ).pack(anchor="w", padx=10, pady=(0, 8))
