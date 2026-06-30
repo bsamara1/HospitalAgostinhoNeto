@@ -1,19 +1,23 @@
 import sqlite3
 import os
 
+# Use an absolute path for the database file (next to this module)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 os.makedirs(BASE_DIR, exist_ok=True)
 DATABASE = os.path.join(BASE_DIR, "hospital.db")
 
 
 def conectar():
+    """Estabelece a conexão com o banco de dados SQLite."""
     return sqlite3.connect(DATABASE)
 
 
 def criar_tabelas():
+
     conn = conectar()
     cursor = conn.cursor()
 
+    # 1. Tabela de Utilizadores (com os campos email e telefone integrados)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS utilizadores(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,15 +30,6 @@ def criar_tabelas():
     )
     """)
 
-    try:
-        cursor.execute("ALTER TABLE utilizadores ADD COLUMN email TEXT")
-    except sqlite3.OperationalError:
-        pass
-    try:
-        cursor.execute("ALTER TABLE utilizadores ADD COLUMN telefone TEXT")
-    except sqlite3.OperationalError:
-        pass
-
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS medicos(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,12 +40,6 @@ def criar_tabelas():
         estado TEXT
     )
     """)
-
-    for col in ["email TEXT", "telefone TEXT", "estado TEXT"]:
-        try:
-            cursor.execute(f"ALTER TABLE medicos ADD COLUMN {col}")
-        except sqlite3.OperationalError:
-            pass
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS pacientes(
@@ -65,6 +54,7 @@ def criar_tabelas():
     )
     """)
 
+    # 4. Tabela de Consultas / Fila de Espera
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS consultas(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -78,24 +68,30 @@ def criar_tabelas():
         FOREIGN KEY(medico) REFERENCES medicos(id)
     )
     """)
-
     conn.commit()
     conn.close()
 
 
 def criar_admin():
+
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute("""
     INSERT OR IGNORE INTO utilizadores
-    (nome, username, senha, perfil, email, telefone)
-    VALUES (?, ?, ?, ?, ?, ?)
-    """, ("Administrador", "admin", "1234", "Administrador", "admin@han.cv", "+238 999 99 99"))
+    (nome, username, senha, perfil)
+    VALUES (?, ?, ?, ?)
+    """, (
+        "Administrador",
+        "admin",
+        "1234",
+        "Administrador"
+    ))
+
     conn.commit()
     conn.close()
 
-
 def consultas_hoje():
+
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute("""
@@ -112,6 +108,7 @@ def consultas_hoje():
 
 
 def consultar_prioridade():
+    """Conta a quantidade de consultas por prioridade para o dia de hoje."""
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute("""
@@ -126,15 +123,24 @@ def consultar_prioridade():
 
 
 def consultar_agenda_medicos():
+    """Lista todos os médicos cadastrados e os seus horários."""
     conn = conectar()
     cursor = conn.cursor()
-    cursor.execute("SELECT nome, especialidade, estado FROM medicos")
+    cursor.execute("""
+        SELECT
+nome,
+especialidade,
+horario
+FROM medicos;
+    """)
+
     dados = cursor.fetchall()
     conn.close()
     return dados
 
 
 def listar_pacientes():
+    """Lista todos os pacientes registados no hospital por ordem de inserção."""
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute("""
@@ -185,11 +191,3 @@ def listar_prioridades(filtro_prioridade="Todos"):
     dados = cursor.fetchall()
     conn.close()
     return dados
-
-
-def atualizar_prioridade_consulta(consulta_id, nova_prioridade):
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE consultas SET prioridade = ? WHERE id = ?", (nova_prioridade, consulta_id))
-    conn.commit()
-    conn.close()
