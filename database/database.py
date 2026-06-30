@@ -1,22 +1,30 @@
 import sqlite3
 import os
+import random
 
-# Use an absolute path for the database file (next to this module)
+# =========================
+# CONFIGURAÇÃO
+# =========================
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 os.makedirs(BASE_DIR, exist_ok=True)
+
 DATABASE = os.path.join(BASE_DIR, "hospital.db")
 
 
 def conectar():
-    """Estabelece a conexão com o banco de dados SQLite."""
     return sqlite3.connect(DATABASE)
 
+
+# =========================
+# CRIAÇÃO DAS TABELAS
+# =========================
 
 def criar_tabelas():
     conn = conectar()
     cursor = conn.cursor()
 
-    # 1. Tabela de Utilizadores
+    # UTILIZADORES (LOGIN)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS utilizadores(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,25 +32,24 @@ def criar_tabelas():
         username TEXT UNIQUE,
         senha TEXT,
         perfil TEXT,
-        email TEXT,
+        email TEXT UNIQUE,
         telefone TEXT
     )
     """)
 
-    # 2. Tabela de Médicos
+    # MÉDICOS
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS medicos(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nome TEXT,
-        email TEXT,
+        email TEXT UNIQUE,
         especialidade TEXT,
         telefone TEXT,
         estado TEXT
     )
     """)
-    
 
-    # 3. Tabela de Pacientes
+    # PACIENTES
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS pacientes(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -53,24 +60,11 @@ def criar_tabelas():
         bi TEXT,
         nascimento TEXT,
         morada TEXT,
-        estado
+        estado TEXT
     )
     """)
-    #Tabela triagem
-    cursor.execute("""    CREATE TABLE IF NOT EXISTS triagem(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        consulta_id INTEGER UNIQUE,        
-        temperatura TEXT,        
-        pressao TEXT,        
-        freq_cardiaca TEXT,        
-        saturacao TEXT,        
-        freq_respiratoria TEXT,
-        glicemia TEXT,        
-        notas TEXT,        
-        triada_em TEXT,       
-        FOREIGN KEY(consulta_id) REFERENCES consultas(id)    )    """)
 
-    # Tabela de Consultas / Fila de Espera
+    # CONSULTAS
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS consultas(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -85,7 +79,24 @@ def criar_tabelas():
     )
     """)
 
-    
+    # TRIAGEM
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS triagem(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        consulta_id INTEGER UNIQUE,
+        temperatura TEXT,
+        pressao TEXT,
+        freq_cardiaca TEXT,
+        saturacao TEXT,
+        freq_respiratoria TEXT,
+        glicemia TEXT,
+        notas TEXT,
+        triada_em TEXT,
+        FOREIGN KEY(consulta_id) REFERENCES consultas(id)
+    )
+    """)
+
+    # NOTIFICAÇÕES
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS notificacoes(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -98,7 +109,7 @@ def criar_tabelas():
     )
     """)
 
-    # GARANTE QUE ESTA TABELA ESTÁ AQUI ESCRITA EXATAMENTE ASSIM:
+    # HISTÓRICO
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS historico_consultas (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -109,7 +120,8 @@ def criar_tabelas():
         motivo TEXT
     )
     """)
-    # 5. NOVA TABELA: Prioridades
+
+    # PRIORIDADES
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS prioridades(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -121,65 +133,130 @@ def criar_tabelas():
     )
     """)
 
-
     conn.commit()
     conn.close()
 
 
-def criar_admin():
+# =========================
+# ADMIN
+# =========================
 
+def criar_admin():
     conn = conectar()
     cursor = conn.cursor()
+
     cursor.execute("""
     INSERT OR IGNORE INTO utilizadores
     (nome, username, senha, perfil)
     VALUES (?, ?, ?, ?)
-    """, (
-        "Administrador",
-        "admin",
-        "1234",
-        "Administrador"
-    ))
+    """, ("Administrador", "admin", "1234", "Administrador"))
 
     conn.commit()
     conn.close()
 
-def inserir_medico(nome, email, especialidade, telefone, estado):
+
+# =========================
+# UTILIZADORES (LOGIN)
+# =========================
+
+def username_existe(username):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT 1 FROM utilizadores WHERE username = ?", (username,))
+    existe = cursor.fetchone() is not None
+
+    conn.close()
+    return existe
+
+
+def gerar_username(email):
+    base = email.split("@")[0].lower()
+    username = base
+    contador = 1
+
+    while username_existe(username):
+        username = f"{base}{contador}"
+        contador += 1
+
+    return username
+
+
+def recuperar_credenciais(email):
     conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
-        INSERT INTO medicos (nome, email, especialidade, telefone, estado)
+        SELECT username, senha
+        FROM utilizadores
+        WHERE email = ?
+    """, (email,))
+
+    dados = cursor.fetchone()
+    conn.close()
+
+    return dados
+
+
+# =========================
+# MÉDICOS + LOGIN AUTOMÁTICO
+# =========================
+
+def email_existe(email):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT 1 FROM utilizadores WHERE email = ?
+    """, (email,))
+
+    existe = cursor.fetchone() is not None
+    conn.close()
+    return existe
+
+
+def criar_medico_com_login(nome, email, especialidade, telefone, estado):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    # evita duplicação de email
+    if email_existe(email):
+        conn.close()
+        return None, None
+
+    # 1. médico
+    cursor.execute("""
+        INSERT INTO medicos(nome, email, especialidade, telefone, estado)
         VALUES (?, ?, ?, ?, ?)
     """, (nome, email, especialidade, telefone, estado))
 
+    # 2. login automático
+    username = gerar_username(email)
+    senha = str(random.randint(1000, 9999))
+
+    cursor.execute("""
+        INSERT INTO utilizadores(nome, username, senha, perfil, email, telefone)
+        VALUES (?, ?, ?, 'Medico', ?, ?)
+    """, (nome, username, senha, email, telefone))
+
     conn.commit()
     conn.close()
-    
-def listar_medicos():
-    conn = conectar()
-    cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM medicos")
-    dados = cursor.fetchall()
+    return username, senha
 
-    conn.close()
-    return dados
 
-def buscar_medico(id_medico):
-    conn = conectar()
-    cursor = conn.cursor()
+def inserir_medico(nome, email, especialidade, telefone, estado):
+    return criar_medico_com_login(nome, email, especialidade, telefone, estado)
 
-    cursor.execute("SELECT * FROM medicos WHERE id = ?", (id_medico,))
-    medico = cursor.fetchone()
 
-    conn.close()
-    return medico
+# =========================
+# CONSULTAS
+# =========================
 
 def consultas_hoje():
-
     conn = conectar()
     cursor = conn.cursor()
+
     cursor.execute("""
         SELECT p.nome, m.nome, c.hora, c.prioridade, c.estado
         FROM consultas c
@@ -188,21 +265,23 @@ def consultas_hoje():
         WHERE c.data = date('now')
         ORDER BY c.hora
     """)
+
     dados = cursor.fetchall()
     conn.close()
     return dados
 
 
 def consultar_prioridade():
-    """Conta a quantidade de consultas por prioridade para o dia de hoje."""
     conn = conectar()
     cursor = conn.cursor()
+
     cursor.execute("""
         SELECT prioridade, COUNT(*)
         FROM consultas
         WHERE data = date('now')
         GROUP BY prioridade
     """)
+
     dados = cursor.fetchall()
     conn.close()
     return dados
@@ -211,472 +290,30 @@ def consultar_prioridade():
 def consultar_agenda_medicos():
     conn = conectar()
     cursor = conn.cursor()
-    cursor.execute("SELECT nome, especialidade, estado FROM medicos")
 
-    dados = cursor.fetchall()
-    conn.close()
-    return dados
-
-
-def listar_pacientes():
-    """Lista todos os pacientes registados no hospital por ordem de inserção."""
-    conn = conectar()
-    cursor = conn.cursor()
     cursor.execute("""
-        SELECT id, nome, sexo, idade, telefone, bi, morada
-        FROM pacientes ORDER BY id DESC
+        SELECT nome, especialidade, estado FROM medicos
     """)
+
     dados = cursor.fetchall()
     conn.close()
     return dados
 
+
+# =========================
+# LISTAR MÉDICOS
+# =========================
 
 def listar_medicos():
     conn = conectar()
     cursor = conn.cursor()
+
     cursor.execute("""
         SELECT id, nome, email, especialidade, telefone, estado
-        FROM medicos ORDER BY id DESC
-    """)
-    dados = cursor.fetchall()
-    conn.close()
-    return dados
-
-
-def listar_prioridades(filtro_prioridade="Todos"):
-    conn = conectar()
-    cursor = conn.cursor()
-    
-    # Busca os dados de prioridade juntando com o nome vindo da tabela de pacientes
-    query = """
-        SELECT pr.id, p.nome, pr.nivel, pr.hora_chegada, pr.medico
-        FROM prioridades pr
-        JOIN pacientes p ON pr.paciente_id = p.id
-    """
-    parametros = []
-    if filtro_prioridade != "Todos":
-        query += " WHERE pr.nivel = ?"
-        parametros.append(filtro_prioridade)
-        
-    query += """
-        ORDER BY
-            CASE pr.nivel
-                WHEN 'Urgente' THEN 1
-                WHEN 'Alta' THEN 2
-                WHEN 'Média' THEN 3
-                WHEN 'Baixa' THEN 4
-                ELSE 5
-            END, pr.hora_chegada ASC
-    """
-    cursor.execute(query, parametros)
-    dados = cursor.fetchall()
-    conn.close()
-    return dados
-
-def guardar_triagem(
-    consulta_id,
-    prioridade,
-    temperatura,
-    pressao,
-    freq_cardiaca,
-    saturacao,
-    freq_respiratoria,
-    glicemia,
-    notas
-):
-    conn = conectar()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        INSERT OR REPLACE INTO triagem (
-            consulta_id,
-            temperatura,
-            pressao,
-            freq_cardiaca,
-            saturacao,
-            freq_respiratoria,
-            glicemia,
-            notas,
-            triada_em
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-    """, (
-        consulta_id,
-        temperatura,
-        pressao,
-        freq_cardiaca,
-        saturacao,
-        freq_respiratoria,
-        glicemia,
-        notas
-    ))
-
-    # Atualiza também a prioridade na consulta
-    cursor.execute("""
-        UPDATE consultas
-        SET prioridade = ?
-        WHERE id = ?
-    """, (prioridade, consulta_id))
-
-    conn.commit()
-    conn.close()
-
-
-def atualizar_prioridade_consulta(consulta_id, nova_prioridade):
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE consultas SET prioridade = ? WHERE id = ?",
-                   (nova_prioridade, consulta_id))
-    conn.commit()
-    conn.close()
-    
-
-def listar_consultas_geral(filtro_estado="Todos"):
-    """Lista as consultas trazendo os nomes dos pacientes e dos médicos para preencher as tabelas."""
-    conn = conectar()
-    cursor = conn.cursor()
-    
-    query = """
-        SELECT c.id, p.nome, m.nome, c.data, c.hora, c.estado
-        FROM consultas c
-        JOIN pacientes p ON c.paciente = p.id
-        JOIN medicos m ON c.medico = m.id
-    """
-    parametros = []
-    if filtro_estado != "Todos":
-        query += " WHERE c.estado = ?"
-        parametros.append(filtro_estado)
-        
-    query += " ORDER BY c.id DESC"
-    cursor.execute(query, parametros)
-    dados = cursor.fetchall()
-    conn.close()
-    return dados
-
-
-def eliminar_e_cancelar_paciente(paciente_id):
-    """Busca o paciente, grava a ação no histórico e elimina-o da tabela de pacientes."""
-    conn = conectar()
-    cursor = conn.cursor()
-    
-    # 1. Busca os dados do paciente antes de eliminá-lo para salvar o nome no histórico
-    cursor.execute("SELECT nome FROM pacientes WHERE id = ?", (paciente_id,))
-    paciente = cursor.fetchone()
-    
-    if not paciente:
-        conn.close()
-        return False  # Paciente não encontrado
-        
-    nome_paciente = paciente[0]
-    
-    # 2. Opcional: Se quiser também remover as consultas pendentes desse paciente para evitar erros de chave estrangeira
-    cursor.execute("DELETE FROM consultas WHERE paciente = ?", (paciente_id,))
-    
-    # 3. Elimina o paciente da tabela de pacientes
-    cursor.execute("DELETE FROM pacientes WHERE id = ?", (paciente_id,))
-    
-    # 4. Adiciona o registo no histórico de consultas (ou tabela de cancelamentos) informando a exclusão
-    cursor.execute("""
-        INSERT INTO historico_consultas(paciente_nome, tipo_acao, data_antiga, data_nova, motivo)
-        VALUES (?, 'Cancelamento', 'Ativo', 'Nenhum (Eliminado)', 'O paciente foi cancelado e removido do sistema')
-    """, (nome_paciente,))
-    
-    conn.commit()
-    conn.close()
-    return True
-    
-
-def listar_historico_cancelamentos():
-    """Procura no histórico todos os registos de cancelamento para exibir na tabela."""
-    conn = conectar()
-    cursor = conn.cursor()
-    # Puxa o ID do histórico, o nome do paciente que foi apagado e a mensagem
-    cursor.execute("""
-        SELECT id, paciente_nome, tipo_acao, motivo 
-        FROM historico_consultas 
-        WHERE tipo_acao = 'Cancelamento' 
+        FROM medicos
         ORDER BY id DESC
     """)
-    dados = cursor.fetchall()
-    conn.close()
-    return dados
-
-def reagendar_consulta_por_paciente(paciente_id, nova_data, nova_hora):
-    """Procura a consulta ativa do paciente e altera a data e hora."""
-    conn = conectar()
-    cursor = conn.cursor()
-    
-    cursor.execute("""
-        SELECT id FROM consultas 
-        WHERE paciente = ? AND estado IN ('Em Espera', 'Reagendado')
-        ORDER BY id DESC LIMIT 1
-    """, (paciente_id,))
-    consulta = cursor.fetchone()
-    
-    if not consulta:
-        conn.close()
-        return False
-        
-    cursor.execute("""
-        UPDATE consultas 
-        SET data = ?, hora = ?, estado = 'Reagendado' 
-        WHERE id = ?
-    """, (nova_data, nova_hora, consulta[0]))
-    conn.commit()
-    conn.close()
-    return True
-
-def limpar_todos_pacientes_e_id():
-    conn = conectar()
-    cursor = conn.cursor()
-    
-    # 1. Apaga os dados
-    cursor.execute("DELETE FROM pacientes")
-    
-    # 2. Reseta o contador interno do SQLite para esta tabela
-    cursor.execute("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'pacientes'")
-    
-    conn.commit()
-    conn.close()
-    return True
-
-def eliminar_historico_cancelamentos():
-    """Apaga TODOS os registos de cancelamento do histórico."""
-    conn = conectar()
-    cursor = conn.cursor()
-    # Apaga as linhas onde o tipo_acao é 'Cancelado'
-    cursor.execute("DELETE FROM historico_consultas WHERE tipo_acao = 'Cancelado'")
-    conn.commit()
-    conn.close()
-    return True
-
-def calcular_prioridade(dados):
-    score = 0
-
-    # Saturação
-    spo2 = float(dados.get("spo2", 100))
-    if spo2 < 90:
-        score += 4
-    elif spo2 < 95:
-        score += 2
-
-    # Temperatura
-    temp = float(dados.get("temperatura", 36.5))
-    if temp >= 39:
-        score += 3
-    elif temp >= 38:
-        score += 2
-    elif temp < 35:
-        score += 3
-
-    # Frequência cardíaca
-    fc = int(dados.get("frequencia_cardiaca", 80))
-    if fc > 120:
-        score += 3
-    elif fc > 100:
-        score += 2
-    elif fc < 50:
-        score += 3
-
-    # Pressão arterial
-    pressao = dados.get("pressao", "120/80")
-
-    try:
-        sys, dia = pressao.split("/")
-        sys = int(sys)
-        dia = int(dia)
-    except:
-        sys = 120
-        dia = 80
-
-    if sys < 90 or dia < 60:
-        score += 4
-    elif sys > 180 or dia > 120:
-        score += 4
-    elif sys > 140 or dia > 90:
-        score += 2
-
-    # Sintomas
-    sintomas = dados.get("sintomas", "").lower()
-
-    if "dor no peito" in sintomas:
-        score += 4
-    if "falta de ar" in sintomas:
-        score += 4
-    if "desmaio" in sintomas:
-        score += 4
-    if "convuls" in sintomas:
-        score += 4
-    if "hemorragia" in sintomas:
-        score += 4
-    if "dor forte" in sintomas:
-        score += 2
-    if "febre" in sintomas:
-        score += 1
-
-    # Resultado final
-    if score >= 8:
-        return "Emergente", score
-    elif score >= 5:
-        return "Muito Urgente", score
-    elif score >= 3:
-        return "Urgente", score
-    elif score >= 1:
-        return "Pouco Urgente", score
-    else:
-        return "Não Urgente", score
-    
-def listar_fila_triagem():
-    conn = conectar()
-    cur = conn.cursor()
-
-    cur.execute("""
-        SELECT 
-            c.id,
-            p.nome,
-            p.idade,
-            c.hora,
-            c.prioridade,
-            c.estado
-        FROM consultas c
-        JOIN pacientes p ON c.paciente = p.id
-        ORDER BY c.id DESC
-    """)
-
-    dados = cur.fetchall()
-    conn.close()
-    return dados
-
-
-
-def proxima_consulta(id_paciente):
-
-    conn = conectar()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT
-            c.data,
-            c.hora,
-            m.nome
-        FROM consultas c
-        JOIN medicos m ON c.medico = m.id
-        WHERE c.paciente = ?
-        ORDER BY c.data, c.hora
-        LIMIT 1
-    """, (id_paciente,))
-
-    consulta = cursor.fetchone()
-
-    conn.close()
-
-    if consulta:
-        data, hora, medico = consulta
-        return f"{data} - {hora}"
-
-    return "Sem consulta"
-
-def total_consultas(id_paciente):
-
-    conn = conectar()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT COUNT(*)
-        FROM consultas
-        WHERE paciente=?
-    """,(id_paciente,))
-
-    total = cursor.fetchone()[0]
-
-    conn.close()
-
-    return total
-
-def contar_notificacoes(id_paciente):
-
-    conn = conectar()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT COUNT(*)
-        FROM notificacoes
-        WHERE paciente=?
-        AND lida=0
-    """,(id_paciente,))
-
-    total = cursor.fetchone()[0]
-
-    conn.close()
-
-    return total
-
-def estado_triagem(id_paciente):
-
-    conn = conectar()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT prioridade
-        FROM consultas
-        WHERE paciente=?
-        ORDER BY id DESC
-        LIMIT 1
-    """,(id_paciente,))
-
-    dado = cursor.fetchone()
-
-    conn.close()
-
-    if dado:
-        return dado[0]
-
-    return "Sem triagem"
-
-def listar_consultas_paciente(id_paciente):
-
-    conn = conectar()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT
-            m.nome,
-            m.especialidade,
-            c.data,
-            c.hora,
-            c.estado
-        FROM consultas c
-        JOIN medicos m
-            ON c.medico=m.id
-        WHERE c.paciente=?
-        ORDER BY c.data,c.hora
-    """,(id_paciente,))
 
     dados = cursor.fetchall()
-
     conn.close()
-
     return dados
-
-
-def listar_notificacoes(id_paciente):
-
-    conn = conectar()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT
-            titulo,
-            mensagem,
-            data
-        FROM notificacoes
-        WHERE paciente=?
-        ORDER BY id DESC
-    """,(id_paciente,))
-
-    dados = cursor.fetchall()
-
-    conn.close()
-
-    return dados
-

@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from tkinter import messagebox
-from database.database import conectar, listar_medicos
+from database.database import conectar, listar_medicos,inserir_medico
 from interface._base import _topbar_base
 from utils.helpers import centralizar_janela
 
@@ -43,41 +43,51 @@ class MedicosContent:
         ctk.CTkButton(janela, text="Guardar", fg_color="#2563EB", hover_color="#1E4FD8",
                       command=self.guardar_medico).pack(pady=20)
 
-    def guardar_medico(self):
-        conn = conectar()
-        cursor = conn.cursor()
+    from database.database import inserir_medico
 
+    def guardar_medico(self):
         nome = self.nome.get()
         email = self.email.get()
         especialidade = self.especialidade.get()
         telefone = self.telefone.get()
         estado = self.estado.get()
 
-        # 1. Criar médico
-        cursor.execute("""
-            INSERT INTO medicos(nome, email, especialidade, telefone, estado)
-            VALUES (?, ?, ?, ?, ?)
-        """, (nome, email, especialidade, telefone, estado))
-
-        # 2. Criar login automaticamente
-        username = email.split("@")[0]   # exemplo: joao@gmail -> joao
-        senha = "1234"                   # senha padrão (podes mudar depois)
-
-        cursor.execute("""
-            INSERT INTO utilizadores(nome, username, senha, perfil, email, telefone)
-            VALUES (?, ?, ?, 'Medico', ?, ?)
-        """, (nome, username, senha, email, telefone))
-
-        conn.commit()
-        conn.close()
-
-        self._form_janela.destroy()
-        messagebox.showinfo(
-            "Sucesso",
-            f"Médico criado!\nLogin: {username}\nSenha: {senha}"
+        username, senha = inserir_medico(
+            nome, email, especialidade, telefone, estado
         )
 
+        self._form_janela.destroy()
+
+        self.mostrar_credenciais(username, senha)
+
         self.refresh_table()
+        
+    def mostrar_credenciais(self, username, senha):
+        win = ctk.CTkToplevel(self.parent)
+        win.title("Credenciais do Médico")
+        win.geometry("400x280")
+        win.grab_set()
+
+        ctk.CTkLabel(
+            win,
+            text="Médico criado com sucesso!",
+            font=("Segoe UI", 18, "bold")
+        ).pack(pady=20)
+
+        ctk.CTkLabel(win, text=f"Username: {username}").pack(pady=10)
+        ctk.CTkLabel(win, text=f"Senha: {senha}").pack(pady=10)
+
+        ctk.CTkButton(
+            win,
+            text="Copiar",
+            command=lambda: win.clipboard_append(f"{username} | {senha}")
+        ).pack(pady=15)
+
+        ctk.CTkButton(
+            win,
+            text="Fechar",
+            command=win.destroy
+        ).pack()
 
     def header(self):
         header = ctk.CTkFrame(self.parent, fg_color="#F4F6FB", height=90)

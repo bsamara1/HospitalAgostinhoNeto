@@ -28,8 +28,21 @@ class AppShell(ctk.CTkToplevel):
 
     def show_app(self, sessao):
         self.clear()
-        from interface.main_window import MainContent
-        MainContent(self.container, sessao)
+
+        perfil = sessao.get("perfil")
+
+        if perfil == "Administrador":
+            from interface.dashboard import DashboardAdmin
+            DashboardAdmin(self.container)
+
+        elif perfil == "Medico":
+            from interface.medico.dashboard_medico import DashboardContent
+            DashboardContent(self.container,sessao)
+
+        else:
+            from tkinter import messagebox
+            messagebox.showerror("Erro", "Perfil desconhecido")
+            self.show_login()
 
     # CORRIGIDO: Alinhamento ajustado e código ativo (sem o #)
     def show_register(self):
