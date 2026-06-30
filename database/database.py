@@ -53,8 +53,21 @@ def criar_tabelas():
         morada TEXT
     )
     """)
+    #Tabela triagem
+    cursor.execute("""    CREATE TABLE IF NOT EXISTS triagem(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        consulta_id INTEGER UNIQUE,        
+        temperatura TEXT,        
+        pressao TEXT,        
+        freq_cardiaca TEXT,        
+        saturacao TEXT,        
+        freq_respiratoria TEXT,
+        glicemia TEXT,        
+        notas TEXT,        
+        triada_em TEXT,       
+        FOREIGN KEY(consulta_id) REFERENCES consultas(id)    )    """)
 
-    # 4. Tabela de Consultas / Fila de Espera
+    # Tabela de Consultas / Fila de Espera
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS consultas(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -185,6 +198,53 @@ def listar_prioridades(filtro_prioridade="Todos"):
     conn.close()
     return dados
 
+def guardar_triagem(
+    consulta_id,
+    prioridade,
+    temperatura,
+    pressao,
+    freq_cardiaca,
+    saturacao,
+    freq_respiratoria,
+    glicemia,
+    notas
+):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT OR REPLACE INTO triagem (
+            consulta_id,
+            temperatura,
+            pressao,
+            freq_cardiaca,
+            saturacao,
+            freq_respiratoria,
+            glicemia,
+            notas,
+            triada_em
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+    """, (
+        consulta_id,
+        temperatura,
+        pressao,
+        freq_cardiaca,
+        saturacao,
+        freq_respiratoria,
+        glicemia,
+        notas
+    ))
+
+    # Atualiza também a prioridade na consulta
+    cursor.execute("""
+        UPDATE consultas
+        SET prioridade = ?
+        WHERE id = ?
+    """, (prioridade, consulta_id))
+
+    conn.commit()
+    conn.close()
 
 def atualizar_prioridade_consulta(consulta_id, nova_prioridade):
     conn = conectar()
@@ -193,3 +253,100 @@ def atualizar_prioridade_consulta(consulta_id, nova_prioridade):
                    (nova_prioridade, consulta_id))
     conn.commit()
     conn.close()
+
+def calcular_prioridade(dados):
+    score = 0
+
+    # Saturação
+    spo2 = float(dados.get("spo2", 100))
+    if spo2 < 90:
+        score += 4
+    elif spo2 < 95:
+        score += 2
+
+    # Temperatura
+    temp = float(dados.get("temperatura", 36.5))
+    if temp >= 39:
+        score += 3
+    elif temp >= 38:
+        score += 2
+    elif temp < 35:
+        score += 3
+
+    # Frequência cardíaca
+    fc = int(dados.get("frequencia_cardiaca", 80))
+    if fc > 120:
+        score += 3
+    elif fc > 100:
+        score += 2
+    elif fc < 50:
+        score += 3
+
+    # Pressão arterial
+    pressao = dados.get("pressao", "120/80")
+
+    try:
+        sys, dia = pressao.split("/")
+        sys = int(sys)
+        dia = int(dia)
+    except:
+        sys = 120
+        dia = 80
+
+    if sys < 90 or dia < 60:
+        score += 4
+    elif sys > 180 or dia > 120:
+        score += 4
+    elif sys > 140 or dia > 90:
+        score += 2
+
+    # Sintomas
+    sintomas = dados.get("sintomas", "").lower()
+
+    if "dor no peito" in sintomas:
+        score += 4
+    if "falta de ar" in sintomas:
+        score += 4
+    if "desmaio" in sintomas:
+        score += 4
+    if "convuls" in sintomas:
+        score += 4
+    if "hemorragia" in sintomas:
+        score += 4
+    if "dor forte" in sintomas:
+        score += 2
+    if "febre" in sintomas:
+        score += 1
+
+    # Resultado final
+    if score >= 8:
+        return "Emergente", score
+    elif score >= 5:
+        return "Muito Urgente", score
+    elif score >= 3:
+        return "Urgente", score
+    elif score >= 1:
+        return "Pouco Urgente", score
+    else:
+        return "Não Urgente", score
+    
+def listar_fila_triagem():
+    conn = conectar()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT 
+            c.id,
+            p.nome,
+            p.idade,
+            c.hora,
+            c.prioridade,
+            c.estado
+        FROM consultas c
+        JOIN pacientes p ON c.paciente = p.id
+        ORDER BY c.id DESC
+    """)
+
+    dados = cur.fetchall()
+    conn.close()
+    return dados
