@@ -227,7 +227,7 @@ class LoginContent:
             cursor = conn.cursor()
 
             cursor.execute("""
-                SELECT id, nome, username, perfil, email, telefone
+                SELECT id, nome, username, perfil, email, telefone, paciente_id
                 FROM utilizadores
                 WHERE username = ? AND senha = ?
             """, (utilizador, senha))
@@ -242,7 +242,7 @@ class LoginContent:
                 )
                 return
 
-            id_user, nome, username, perfil, email, telefone = user
+            id_user, nome, username, perfil, email, telefone, paciente_id = user
 
             sessao = {
                 "id": id_user,
@@ -250,7 +250,8 @@ class LoginContent:
                 "username": username,
                 "perfil": perfil,
                 "email": email,
-                "telefone": telefone
+                "telefone": telefone,
+                "paciente_id": paciente_id,
             }
 
             messagebox.showinfo(

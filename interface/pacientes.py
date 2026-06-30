@@ -48,21 +48,39 @@ class PacientesContent:
         ctk.CTkButton(janela, text="Guardar", fg_color="#2563EB", command=self.guardar_paciente).pack(pady=20)
 
     def guardar_paciente(self):
-        conn = conectar()
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO pacientes(nome, sexo, idade, telefone, bi, nascimento, morada)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (
-            self.nome.get(), self.sexo.get(), self.idade.get(),
-            self.telefone.get(), self.bi.get(),
-            self.nascimento.get(), self.morada.get()
-        ))
-        conn.commit()
-        conn.close()
-        self._form_janela.destroy()
-        messagebox.showinfo("Sucesso", "Paciente adicionado com sucesso!")
-        self.refresh_table()
+        nome = self.nome.get().strip()
+        sexo = self.sexo.get().strip()
+        idade = self.idade.get().strip()
+        telefone = self.telefone.get().strip()
+        bi = self.bi.get().strip()
+        nascimento = self.nascimento.get().strip()
+        morada = self.morada.get().strip()
+
+        if not all([nome, sexo, idade, telefone, bi, nascimento, morada]):
+            messagebox.showwarning("Erro", "Preencha todos os campos do paciente.")
+            return
+
+        if not idade.isdigit():
+            messagebox.showwarning("Erro", "A idade deve ser um número válido.")
+            return
+
+        try:
+            conn = conectar()
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO pacientes(nome, sexo, idade, telefone, bi, nascimento, morada)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (
+                nome, sexo, int(idade), telefone, bi,
+                nascimento, morada
+            ))
+            conn.commit()
+            conn.close()
+            self._form_janela.destroy()
+            messagebox.showinfo("Sucesso", "Paciente adicionado com sucesso!")
+            self.refresh_table()
+        except Exception as e:
+            messagebox.showerror("Erro", f"Não foi possível adicionar o paciente: {e}")
 
     # =========================================================================
     # NOVA FUNÇÃO: Executada quando clicas no botão Eliminar da tabela

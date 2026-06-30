@@ -29,10 +29,9 @@ class AppShell(ctk.CTkToplevel):
     def show_app(self, sessao):
         self.clear()
         from interface.main_window import MainContent
-        MainContent(self.container, sessao)
+        MainContent(self.container, self.show_login, sessao)
 
-    # CORRIGIDO: Alinhamento ajustado e código ativo (sem o #)
     def show_register(self):
         self.clear()
-        from interface.criar_conta import CriarContaContent # Substitui pelo nome correto se for diferente
-        CriarContaContent(self.container, self.show_login)
+        from interface.criar_conta import CriarContaContent
+        CriarContaContent(self.container, self.show_login, self.show_app)

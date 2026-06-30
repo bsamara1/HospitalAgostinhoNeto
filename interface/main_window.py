@@ -16,12 +16,22 @@ MENUS = [
     ("Definições", "assets/definicao.png"),
 ]
 
+PACIENTE_MENUS = [
+    ("Painel Principal", "assets/casa.png"),
+    ("Minhas Consultas", "assets/agendar.png"),
+    ("Notificações", "assets/utilizadores.png"),
+    ("Reagendamento", "assets/reagendar.png"),
+    ("Cancelamento", "assets/cancelar.png"),
+    ("Definições", "assets/definicao.png"),
+]
+
 
 class MainContent:
 
-    def __init__(self, parent, on_logout):
+    def __init__(self, parent, on_logout, sessao=None):
         self.parent = parent
         self.on_logout = on_logout
+        self.sessao = sessao
 
         self._menu_buttons = {}
         self._icons = []
@@ -88,8 +98,10 @@ class MainContent:
             text_color="#D6E4F0"
         ).grid(row=1, column=1, sticky="w")
 
+        menus = PACIENTE_MENUS if self.sessao and self.sessao.get("perfil") == "paciente" else MENUS
+
         # MENUS
-        for nome, icon_path in MENUS:
+        for nome, icon_path in menus:
 
             try:
                 img = ctk.CTkImage(Image.open(icon_path), size=(20, 20))
@@ -146,8 +158,12 @@ class MainContent:
 
         # IMPORTS LAZY (evita crashes)
         if menu_name == "Painel Principal":
-            from interface.dashboard import DashboardAdmin
-            DashboardAdmin(self.content_frame)
+            if self.sessao and self.sessao.get("perfil") == "paciente":
+                from interface.pacientes_dash.dashboard import DashboardPacienteContent
+                DashboardPacienteContent(self.content_frame, self.sessao.get("paciente_id") or self.sessao.get("id"))
+            else:
+                from interface.dashboard import DashboardAdmin
+                DashboardAdmin(self.content_frame)
 
         elif menu_name == "Pacientes":
             from interface.pacientes import PacientesContent
@@ -162,16 +178,32 @@ class MainContent:
             MarcacaoContent(self.content_frame)
 
         elif menu_name == "Reagendamento":
-            from interface.reagendamento import ReagendamentoContent
-            ReagendamentoContent(self.content_frame)
+            if self.sessao and self.sessao.get("perfil") == "paciente":
+                from interface.pacientes_dash.reagendar import ReagendarContent
+                ReagendarContent(self.content_frame, self.sessao.get("paciente_id") or self.sessao.get("id"))
+            else:
+                from interface.reagendamento import ReagendamentoContent
+                ReagendamentoContent(self.content_frame)
 
         elif menu_name == "Cancelamento":
-            from interface.cancelamento import CancelamentoContent
-            CancelamentoContent(self.content_frame)
+            if self.sessao and self.sessao.get("perfil") == "paciente":
+                from interface.pacientes_dash.cancelar import CancelarContent
+                CancelarContent(self.content_frame, self.sessao.get("paciente_id") or self.sessao.get("id"))
+            else:
+                from interface.cancelamento import CancelamentoContent
+                CancelamentoContent(self.content_frame)
 
         elif menu_name == "Triagem":
             from interface.triagem import TriagemContent
             TriagemContent(self.content_frame)
+
+        elif menu_name == "Minhas Consultas":
+            from interface.pacientes_dash.minhas_consultas import MinhasConsultasContent
+            MinhasConsultasContent(self.content_frame, self.sessao.get("paciente_id") or self.sessao.get("id"))
+
+        elif menu_name == "Notificações":
+            from interface.pacientes_dash.notificacoes import NotificacoesContent
+            NotificacoesContent(self.content_frame, self.sessao.get("paciente_id") or self.sessao.get("id"))
 
         elif menu_name == "Prioridades":
             from interface.prioridades import PrioridadesContent
