@@ -254,11 +254,6 @@ class LoginContent:
                 "telefone": telefone
             }
 
-            messagebox.showinfo(
-                "Sucesso",
-                f"Bem-vindo {nome}"
-            )
-
             # Envia a sessão para a aplicação principal
             if self.on_success:
                 self.on_success(sessao)
