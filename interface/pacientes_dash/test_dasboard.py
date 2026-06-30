@@ -1,11 +1,12 @@
-import customtkinter as ctk
+﻿import customtkinter as ctk
 import os
 import sys
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from interface.pacientes_dash.dashboard import DashboardPacienteContent  # ajusta o nome do ficheiro real
+root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+os.chdir(root_dir)
+sys.path.insert(0, root_dir)
 
+from interface.pacientes_dash.dashboard import DashboardPacienteContent
 
 class App(ctk.CTk):
 
@@ -14,17 +15,11 @@ class App(ctk.CTk):
 
         self.title("Teste Dashboard Paciente")
         self.geometry("1200x700")
-
-        # fundo
         self.configure(fg_color="#F4F6FB")
 
-        # 🔥 ID de teste (tem de existir na tabela pacientes)
         id_paciente = 1
-
         DashboardPacienteContent(self, id_paciente)
 
-
-# executar app
 if __name__ == "__main__":
     app = App()
     app.mainloop()

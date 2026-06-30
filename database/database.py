@@ -134,6 +134,19 @@ def criar_tabelas():
     """)
 
     conn.commit()
+
+    cursor.execute("PRAGMA table_info(utilizadores)")
+    colunas = [col[1] for col in cursor.fetchall()]
+    if "paciente_id" not in colunas:
+        cursor.execute("ALTER TABLE utilizadores ADD COLUMN paciente_id INTEGER")
+        conn.commit()
+
+    cursor.execute("PRAGMA table_info(pacientes)")
+    paciente_colunas = [col[1] for col in cursor.fetchall()]
+    if "estado" not in paciente_colunas:
+        cursor.execute("ALTER TABLE pacientes ADD COLUMN estado TEXT")
+        conn.commit()
+
     conn.close()
 
 
@@ -155,6 +168,7 @@ def criar_admin():
     conn.close()
 
 
+<<<<<<< HEAD
 # =========================
 # UTILIZADORES (LOGIN)
 # =========================
@@ -183,6 +197,50 @@ def gerar_username(email):
 
 
 def recuperar_credenciais(email):
+=======
+def criar_paciente_teste():
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id FROM utilizadores WHERE username = ?", ("paciente1",))
+    if cursor.fetchone():
+        conn.close()
+        return
+
+    cursor.execute("""
+        INSERT INTO pacientes(nome, sexo, idade, telefone, bi, nascimento, morada, estado)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        "Paciente Teste",
+        "Não definido",
+        30,
+        "912345678",
+        "",
+        "",
+        "",
+        "Ativo"
+    ))
+    paciente_id = cursor.lastrowid
+
+    cursor.execute("""
+        INSERT INTO utilizadores(nome, username, senha, perfil, email, telefone, paciente_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (
+        "Paciente Teste",
+        "paciente1",
+        "1234",
+        "paciente",
+        "paciente1@example.com",
+        "912345678",
+        paciente_id
+    ))
+
+    conn.commit()
+    conn.close()
+
+
+def inserir_medico(nome, email, especialidade, telefone, estado):
+>>>>>>> 80e18aae06b56ea8a4383fffb211d44f330d3568
     conn = conectar()
     cursor = conn.cursor()
 
