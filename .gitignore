@@ -3,8 +3,12 @@ venv/
 
 # Cache do Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
 
+# Base de dados SQLite
+*.db
+*.sqlite3
 
-# Configurações do VS Code
+# VS Code
 .vscode/
