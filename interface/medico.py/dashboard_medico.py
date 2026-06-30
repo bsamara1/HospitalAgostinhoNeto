@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from interface.dashboard_admin import DashboardAdmin
+from interface.dashboard import DashboardAdmin
 from database.database import consultas_hoje, consultar_prioridade, consultar_agenda_medicos
 
 

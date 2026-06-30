@@ -144,6 +144,38 @@ def criar_admin():
     conn.commit()
     conn.close()
 
+def inserir_medico(nome, email, especialidade, telefone, estado):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO medicos (nome, email, especialidade, telefone, estado)
+        VALUES (?, ?, ?, ?, ?)
+    """, (nome, email, especialidade, telefone, estado))
+
+    conn.commit()
+    conn.close()
+    
+def listar_medicos():
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM medicos")
+    dados = cursor.fetchall()
+
+    conn.close()
+    return dados
+
+def buscar_medico(id_medico):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM medicos WHERE id = ?", (id_medico,))
+    medico = cursor.fetchone()
+
+    conn.close()
+    return medico
+
 def consultas_hoje():
 
     conn = conectar()
