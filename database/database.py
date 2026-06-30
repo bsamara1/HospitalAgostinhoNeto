@@ -40,6 +40,7 @@ def criar_tabelas():
         estado TEXT
     )
     """)
+    
 
     # 3. Tabela de Pacientes
     cursor.execute("""
@@ -51,7 +52,8 @@ def criar_tabelas():
         telefone TEXT,
         bi TEXT,
         nascimento TEXT,
-        morada TEXT
+        morada TEXT,
+        estado
     )
     """)
     #Tabela triagem
@@ -82,6 +84,20 @@ def criar_tabelas():
         FOREIGN KEY(medico) REFERENCES medicos(id)
     )
     """)
+
+    
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS notificacoes(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        paciente INTEGER,
+        titulo TEXT,
+        mensagem TEXT,
+        data TEXT,
+        lida INTEGER DEFAULT 0,
+        FOREIGN KEY(paciente) REFERENCES pacientes(id)
+    )
+    """)
+
     # GARANTE QUE ESTA TABELA ESTÁ AQUI ESCRITA EXATAMENTE ASSIM:
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS historico_consultas (
@@ -104,6 +120,7 @@ def criar_tabelas():
         FOREIGN KEY(paciente_id) REFERENCES pacientes(id)
     )
     """)
+
 
     conn.commit()
     conn.close()
@@ -272,6 +289,10 @@ def guardar_triagem(
     conn.commit()
     conn.close()
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> e9a6236e1a848cac6801fed778ab85ca5388b395
 def atualizar_prioridade_consulta(consulta_id, nova_prioridade):
     conn = conectar()
     cursor = conn.cursor()
@@ -279,7 +300,11 @@ def atualizar_prioridade_consulta(consulta_id, nova_prioridade):
                    (nova_prioridade, consulta_id))
     conn.commit()
     conn.close()
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> e9a6236e1a848cac6801fed778ab85ca5388b395
 def listar_consultas_geral(filtro_estado="Todos"):
     """Lista as consultas trazendo os nomes dos pacientes e dos médicos para preencher as tabelas."""
     conn = conectar()
@@ -495,3 +520,140 @@ def listar_fila_triagem():
     dados = cur.fetchall()
     conn.close()
     return dados
+<<<<<<< HEAD
+=======
+
+
+
+def proxima_consulta(id_paciente):
+
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            c.data,
+            c.hora,
+            m.nome
+        FROM consultas c
+        JOIN medicos m ON c.medico = m.id
+        WHERE c.paciente = ?
+        ORDER BY c.data, c.hora
+        LIMIT 1
+    """, (id_paciente,))
+
+    consulta = cursor.fetchone()
+
+    conn.close()
+
+    if consulta:
+        data, hora, medico = consulta
+        return f"{data} - {hora}"
+
+    return "Sem consulta"
+
+def total_consultas(id_paciente):
+
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM consultas
+        WHERE paciente=?
+    """,(id_paciente,))
+
+    total = cursor.fetchone()[0]
+
+    conn.close()
+
+    return total
+
+def contar_notificacoes(id_paciente):
+
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM notificacoes
+        WHERE paciente=?
+        AND lida=0
+    """,(id_paciente,))
+
+    total = cursor.fetchone()[0]
+
+    conn.close()
+
+    return total
+
+def estado_triagem(id_paciente):
+
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT prioridade
+        FROM consultas
+        WHERE paciente=?
+        ORDER BY id DESC
+        LIMIT 1
+    """,(id_paciente,))
+
+    dado = cursor.fetchone()
+
+    conn.close()
+
+    if dado:
+        return dado[0]
+
+    return "Sem triagem"
+
+def listar_consultas_paciente(id_paciente):
+
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            m.nome,
+            m.especialidade,
+            c.data,
+            c.hora,
+            c.estado
+        FROM consultas c
+        JOIN medicos m
+            ON c.medico=m.id
+        WHERE c.paciente=?
+        ORDER BY c.data,c.hora
+    """,(id_paciente,))
+
+    dados = cursor.fetchall()
+
+    conn.close()
+
+    return dados
+
+
+def listar_notificacoes(id_paciente):
+
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            titulo,
+            mensagem,
+            data
+        FROM notificacoes
+        WHERE paciente=?
+        ORDER BY id DESC
+    """,(id_paciente,))
+
+    dados = cursor.fetchall()
+
+    conn.close()
+
+    return dados
+
+>>>>>>> e9a6236e1a848cac6801fed778ab85ca5388b395
