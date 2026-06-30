@@ -84,7 +84,7 @@ def criar_tabelas():
         FOREIGN KEY(medico) REFERENCES medicos(id)
     )
     """)
-<<<<<<< HEAD
+
     
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS notificacoes(
@@ -97,7 +97,7 @@ def criar_tabelas():
         FOREIGN KEY(paciente) REFERENCES pacientes(id)
     )
     """)
-=======
+
     # GARANTE QUE ESTA TABELA ESTÁ AQUI ESCRITA EXATAMENTE ASSIM:
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS historico_consultas (
@@ -121,7 +121,7 @@ def criar_tabelas():
     )
     """)
 
->>>>>>> 2de250fbb3a2e09114d8ed03da3fc5cf58b589ad
+
     conn.commit()
     conn.close()
 
@@ -241,8 +241,6 @@ def listar_prioridades(filtro_prioridade="Todos"):
     conn.close()
     return dados
 
-<<<<<<< HEAD
-=======
 def guardar_triagem(
     consulta_id,
     prioridade,
@@ -291,7 +289,7 @@ def guardar_triagem(
     conn.commit()
     conn.close()
 
->>>>>>> ffe469d85f5e4ece0417cc81e3d0ba3aa256b428
+
 def atualizar_prioridade_consulta(consulta_id, nova_prioridade):
     conn = conectar()
     cursor = conn.cursor()
@@ -299,8 +297,7 @@ def atualizar_prioridade_consulta(consulta_id, nova_prioridade):
                    (nova_prioridade, consulta_id))
     conn.commit()
     conn.close()
-<<<<<<< HEAD
-    
+
 def listar_consultas_geral(filtro_estado="Todos"):
     """Lista as consultas trazendo os nomes dos pacientes e dos médicos para preencher as tabelas."""
     conn = conectar()
@@ -419,7 +416,6 @@ def eliminar_historico_cancelamentos():
     conn.commit()
     conn.close()
     return True
-=======
 
 def calcular_prioridade(dados):
     score = 0
@@ -517,7 +513,7 @@ def listar_fila_triagem():
     dados = cur.fetchall()
     conn.close()
     return dados
-<<<<<<< HEAD
+
 
 
 def proxima_consulta(id_paciente):
@@ -650,6 +646,4 @@ def listar_notificacoes(id_paciente):
     conn.close()
 
     return dados
-=======
->>>>>>> ffe469d85f5e4ece0417cc81e3d0ba3aa256b428
->>>>>>> 2de250fbb3a2e09114d8ed03da3fc5cf58b589ad
+
