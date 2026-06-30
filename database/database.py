@@ -123,16 +123,9 @@ def consultar_prioridade():
 
 
 def consultar_agenda_medicos():
-    """Lista todos os médicos cadastrados e os seus horários."""
     conn = conectar()
     cursor = conn.cursor()
-    cursor.execute("""
-        SELECT
-nome,
-especialidade,
-horario
-FROM medicos;
-    """)
+    cursor.execute("SELECT nome, especialidade, estado FROM medicos")
 
     dados = cursor.fetchall()
     conn.close()
@@ -191,3 +184,12 @@ def listar_prioridades(filtro_prioridade="Todos"):
     dados = cursor.fetchall()
     conn.close()
     return dados
+
+
+def atualizar_prioridade_consulta(consulta_id, nova_prioridade):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE consultas SET prioridade = ? WHERE id = ?",
+                   (nova_prioridade, consulta_id))
+    conn.commit()
+    conn.close()
