@@ -15,9 +15,6 @@ from interface._base import _topbar_base
 class TriagemContent:
 
     def __init__(self, parent):
-<<<<<<< HEAD
-        _placeholder(parent, "Triagem")
-=======
         self.parent = parent
 
         _topbar_base(parent, "Triagem")
@@ -322,4 +319,3 @@ class TriagemContent:
         )
 
         self.refresh_table()
->>>>>>> ffe469d85f5e4ece0417cc81e3d0ba3aa256b428
