@@ -1,33 +1,20 @@
 import customtkinter as ctk
+from utils.helpers import centralizar_janela
 from tkinter import messagebox
 from functools import partial
-
-from database.database import (
-    listar_fila_triagem,
-    guardar_triagem,
-    calcular_prioridade,
-    listar_prioridades
-)
-
-from interface._base import _topbar_base
-
 
 class TriagemContent:
 
     def __init__(self, parent):
         self.parent = parent
-
-        _topbar_base(parent, "Triagem")
-
         self.header()
         self.search_area()
         self.table_area()
 
-    # =========================
-    # HEADER
-    # =========================
+    # =========================================================================
+    # HEADER (Padronizado)
+    # =========================================================================
     def header(self):
-
         header = ctk.CTkFrame(self.parent, fg_color="#F4F6FB", height=90)
         header.pack(fill="x", padx=35, pady=(25, 15))
         header.pack_propagate(False)
@@ -36,257 +23,249 @@ class TriagemContent:
         left.pack(side="left")
 
         ctk.CTkLabel(
-            left,
-            text="Triagem",
-            font=("Segoe UI", 30, "bold"),
+            left, text="Triagem", 
+            font=("Segoe UI", 30, "bold"), 
             text_color="#183153"
         ).pack(anchor="w")
 
         ctk.CTkLabel(
-            left,
-            text="Gestão da triagem automática de pacientes.",
-            font=("Segoe UI", 14),
+            left, text="Gestão da triagem automática de pacientes.", 
+            font=("Segoe UI", 14), 
             text_color="#6B7280"
-        ).pack(anchor="w")
+        ).pack(anchor="w", pady=(3, 0))
 
         ctk.CTkButton(
-            header,
-            text="+ Adicionar Triagem",
-            width=180,
-            height=45,
-            fg_color="#16A34A",
-            hover_color="#15803D",
+            header, text="+ Adicionar Triagem",
+            width=190, height=45, corner_radius=8,
+            fg_color="#16A34A", hover_color="#15803D",
+            font=("Segoe UI", 14, "bold"),
             command=self.abrir_selecionar_consulta
         ).pack(side="right")
 
-    # =========================
-    # SEARCH
-    # =========================
+    # =========================================================================
+    # SEARCH AREA
+    # =========================================================================
     def search_area(self):
-
         filtros = ctk.CTkFrame(self.parent, fg_color="transparent")
         filtros.pack(fill="x", padx=35, pady=(0, 20))
 
         self.txtPesquisa = ctk.CTkEntry(
-            filtros,
-            placeholder_text="Pesquisar paciente...",
-            height=45
+            filtros, placeholder_text="🔍 Pesquisar paciente...",
+            height=45, corner_radius=8, border_width=1, font=("Segoe UI", 14)
         )
         self.txtPesquisa.pack(side="left", fill="x", expand=True)
 
         self.combo = ctk.CTkComboBox(
-            filtros,
-            values=["Todos", "Aguarda", "Em triagem", "Concluída"],
-            width=180,
-            height=45
+            filtros, values=["Todos", "Aguarda", "Em triagem", "Concluída"], 
+            width=180, height=45, corner_radius=8
         )
         self.combo.set("Todos")
         self.combo.pack(side="left", padx=15)
 
-    # =========================
-    # TABLE
-    # =========================
+    # =========================================================================
+    # TABLE AREA (Card Arredondado)
+    # =========================================================================
     def table_area(self):
-
-        self.card = ctk.CTkFrame(
-            self.parent,
-            fg_color="white",
-            corner_radius=12,
-            border_width=1,
-            border_color="#E4E7EC"
-        )
+        self.card = ctk.CTkFrame(self.parent, fg_color="white", corner_radius=12, border_width=1, border_color="#E4E7EC")
         self.card.pack(fill="both", expand=True, padx=35, pady=(0, 25))
 
-        self.content = ctk.CTkFrame(self.card, fg_color="white")
+        self.content = ctk.CTkFrame(self.card, fg_color="white", corner_radius=12)
         self.content.pack(fill="both", expand=True)
 
         self.table_header()
 
-        self.body = ctk.CTkScrollableFrame(self.content, fg_color="white")
+        self.body = ctk.CTkScrollableFrame(self.content, fg_color="white", corner_radius=0)
         self.body.pack(fill="both", expand=True)
 
         self.table_rows()
         self.table_footer()
 
-    # =========================
-    # TABLE HEADER
-    # =========================
+    # =========================================================================
+    # TABLE HEADER (Cores e Fontes Ajustadas)
+    # =========================================================================
     def table_header(self):
-
-        header = ctk.CTkFrame(self.content, fg_color="#C9C9C9", height=60)
-        header.pack(fill="x")
+        header = ctk.CTkFrame(self.content, fg_color="#C9C9C9", height=65, corner_radius=0)
+        header.pack(fill="x", pady=(0, 2))
         header.pack_propagate(False)
 
         colunas = [
-            ("ID", 60),
-            ("Paciente", 220),
-            ("Idade", 80),
-            ("Hora", 120),
-            ("Prioridade", 120),
-            ("Estado", 120),
+            ("ID", 60), ("Paciente", 220), ("Idade", 80), 
+            ("Hora", 120), ("Prioridade", 120), ("Estado", 120)
         ]
 
         for texto, largura in colunas:
             ctk.CTkLabel(
-                header,
-                text=texto,
-                width=largura,
-                anchor="w",
-                font=("Segoe UI", 13, "bold")
-            ).pack(side="left", padx=5)
+                header, text=texto, width=largura, anchor="w", 
+                font=("Segoe UI", 13, "bold"), text_color="#475467"
+            ).pack(side="left", padx=12)
 
-    # =========================
-    # TABLE ROWS
-    # =========================
+        ctk.CTkFrame(self.content, height=1, fg_color="#E5E7EB").pack(fill="x")
+
+    # =========================================================================
+    # TABLE ROWS (Estilização igual às outras tabelas)
+    # =========================================================================
     def table_rows(self):
-
-        triagens = listar_fila_triagem()
-
-        if not triagens:
-            ctk.CTkLabel(
-                self.body,
-                text="Nenhum paciente na triagem.",
-                font=("Segoe UI", 15),
-                text_color="gray"
-            ).pack(pady=40)
-            return
-
-        for t in triagens:
-
-            linha = ctk.CTkFrame(self.body, fg_color="white", height=60)
-            linha.pack(fill="x")
-            linha.pack_propagate(False)
-
-            dados = [t[0], t[1], t[2], t[3], t[4], t[5]]
+        try:
+            triagens = listar_fila_triagem()
             larguras = [60, 220, 80, 120, 120, 120]
 
-            for valor, largura in zip(dados, larguras):
+            if not triagens:
                 ctk.CTkLabel(
-                    linha,
-                    text=str(valor),
-                    width=largura,
-                    anchor="w",
-                    font=("Segoe UI", 13)
-                ).pack(side="left", padx=5)
+                    self.body, text="Nenhum paciente na triagem.", 
+                    font=("Segoe UI", 14), text_color="#6B7280"
+                ).pack(pady=40)
+                return
 
-    # =========================
+            for i, t in enumerate(triagens):
+                linha = ctk.CTkFrame(self.body, fg_color="white", height=68)
+                linha.pack(fill="x")
+                linha.pack_propagate(False)
+
+                dados = [t[0], t[1], t[2], t[3], t[4], t[5]]
+
+                for valor, largura in zip(dados, larguras):
+                    cel = ctk.CTkFrame(linha, width=largura, fg_color="white")
+                    cel.pack(side="left", fill="y")
+                    cel.pack_propagate(False)
+                    
+                    ctk.CTkLabel(
+                        cel, text=str(valor), anchor="w", 
+                        font=("Segoe UI", 13), text_color="#344054"
+                    ).pack(fill="both", padx=12)
+
+                # Desenha a linha fina de separação entre registos
+                if i < len(triagens) - 1:
+                    ctk.CTkFrame(self.body, height=1, fg_color="#F1F5F9").pack(fill="x", padx=15)
+        except Exception as e:
+            print(f"Erro ao carregar linhas de triagem: {e}")
+
+    # =========================================================================
     # FOOTER
-    # =========================
+    # =========================================================================
     def table_footer(self):
-
-        footer = ctk.CTkFrame(self.content, fg_color="white", height=50)
-        footer.pack(fill="x")
+        ctk.CTkFrame(self.content, height=1, fg_color="#E5E7EB").pack(fill="x")
+        footer = ctk.CTkFrame(self.content, fg_color="white", height=70, corner_radius=0)
+        footer.pack(fill="x", side="bottom")
         footer.pack_propagate(False)
 
         total = len(listar_fila_triagem())
 
         ctk.CTkLabel(
-            footer,
-            text=f"Total: {total} pacientes",
-            font=("Segoe UI", 12),
-            text_color="#667085"
+            footer, text=f"Total: {total} pacientes na fila", 
+            font=("Segoe UI", 12), text_color="#667085"
         ).pack(side="left", padx=20)
 
-    # =========================
-    # REFRESH
-    # =========================
+    # =========================================================================
+    # REFRESH CORRIGIDO
+    # =========================================================================
     def refresh_table(self):
-        self.card.destroy()
+        for widget in self.body.winfo_children():
+            widget.destroy()
+        if hasattr(self, 'card') and self.card:
+            self.card.destroy()
         self.table_area()
 
-    # =========================
-    # SELECIONAR CONSULTA
-    # =========================
+    # =========================================================================
+    # SELECIONAR CONSULTA POPUP
+    # =========================================================================
     def abrir_selecionar_consulta(self):
-
         janela = ctk.CTkToplevel(self.parent)
         janela.title("Selecionar Consulta")
         janela.geometry("600x400")
+        janela.resizable(False, False)
         janela.grab_set()
+        centralizar_janela(janela, 600, 450)
+
+        ctk.CTkLabel(
+            janela, text="Selecione uma Consulta para Triagem", 
+            font=("Segoe UI", 18, "bold"), text_color="#183153"
+        ).pack(pady=20)
 
         consultas = listar_prioridades()
 
         if not consultas:
             ctk.CTkLabel(
-                janela,
-                text="Nenhuma consulta disponível",
-                font=("Segoe UI", 14),
-                text_color="gray"
+                janela, text="Nenhuma consulta disponível para triagem de momento.", 
+                font=("Segoe UI", 14), text_color="#6B7280"
             ).pack(pady=40)
             return
 
-        for c in consultas:
+        scroll_popup = ctk.CTkScrollableFrame(janela, fg_color="transparent")
+        scroll_popup.pack(fill="both", expand=True, padx=20, pady=10)
 
+        for c in consultas:
             consulta_id = c[0]
             paciente = c[1]
             prioridade = c[2]
 
-            linha = ctk.CTkFrame(janela)
-            linha.pack(fill="x", padx=10, pady=5)
+            linha = ctk.CTkFrame(scroll_popup, fg_color="white", height=50, corner_radius=6, border_width=1, border_color="#E4E7EC")
+            linha.pack(fill="x", pady=4)
+            linha.pack_propagate(False)
 
             ctk.CTkLabel(
-                linha,
-                text=f"ID {consulta_id} | {paciente} - {prioridade}"
-            ).pack(side="left")
+                linha, text=f" ID #{consulta_id}  |  {paciente} ({prioridade})", 
+                font=("Segoe UI", 13), text_color="#344054"
+            ).pack(side="left", padx=15)
 
             ctk.CTkButton(
-                linha,
-                text="Selecionar",
+                linha, text="Selecionar", width=100, height=32, corner_radius=6,
+                fg_color="#2563EB", hover_color="#1E4FD8", font=("Segoe UI", 12, "bold"),
                 command=partial(self.abrir_form_triagem, consulta_id, janela)
-            ).pack(side="right")
+            ).pack(side="right", padx=15, pady=8)
 
-    # =========================
-    # FORM TRIAGEM
-    # =========================
+    # =========================================================================
+    # FORM TRIAGEM POPUP
+    # =========================================================================
     def abrir_form_triagem(self, consulta_id, janela_select=None):
-
         if janela_select:
             janela_select.destroy()
 
         self.consulta_id = consulta_id
 
         janela = ctk.CTkToplevel(self.parent)
-        janela.title("Triagem")
-        janela.geometry("600x700")
+        janela.title("Formulário de Triagem")
+        janela.geometry("500x650")
+        janela.resizable(False, False)
         janela.grab_set()
+        centralizar_janela(janela, 500, 650)
 
         self.janela_triagem = janela
 
         ctk.CTkLabel(
-            janela,
-            text="Triagem do Paciente",
-            font=("Segoe UI", 22, "bold")
-        ).pack(pady=15)
+            janela, text="Triagem Sinais Vitais", 
+            font=("Segoe UI", 22, "bold"), text_color="#183153"
+        ).pack(pady=25)
 
-        self.temp = ctk.CTkEntry(janela, placeholder_text="Temperatura")
-        self.temp.pack(fill="x", padx=30, pady=5)
+        self.temp = ctk.CTkEntry(janela, placeholder_text="Temperatura (°C)", height=40, corner_radius=8)
+        self.temp.pack(fill="x", padx=45, pady=8)
 
-        self.pressao = ctk.CTkEntry(janela, placeholder_text="Pressão arterial")
-        self.pressao.pack(fill="x", padx=30, pady=5)
+        self.pressao = ctk.CTkEntry(janela, placeholder_text="Pressão Arterial (ex: 12/8)", height=40, corner_radius=8)
+        self.pressao.pack(fill="x", padx=45, pady=8)
 
-        self.fc = ctk.CTkEntry(janela, placeholder_text="Frequência cardíaca")
-        self.fc.pack(fill="x", padx=30, pady=5)
+        self.fc = ctk.CTkEntry(janela, placeholder_text="Frequência Cardíaca (bpm)", height=40, corner_radius=8)
+        self.fc.pack(fill="x", padx=45, pady=8)
 
-        self.sat = ctk.CTkEntry(janela, placeholder_text="Saturação (%)")
-        self.sat.pack(fill="x", padx=30, pady=5)
+        self.sat = ctk.CTkEntry(janela, placeholder_text="Saturação de Oxigénio (%)", height=40, corner_radius=8)
+        self.sat.pack(fill="x", padx=45, pady=8)
 
-        self.sintomas = ctk.CTkTextbox(janela, height=100)
-        self.sintomas.pack(fill="x", padx=30, pady=10)
+        ctk.CTkLabel(janela, text="Sintomas / Observações:", font=("Segoe UI", 13, "bold"), text_color="#475467").pack(anchor="w", padx=45, pady=(10, 2))
+        
+        self.sintomas = ctk.CTkTextbox(janela, height=120, corner_radius=8, border_width=1, border_color="#D0D5DD")
+        self.sintomas.pack(fill="x", padx=45, pady=5)
 
         ctk.CTkButton(
-            janela,
-            text="Calcular e Guardar",
-            fg_color="#2563EB",
+            janela, text="Calcular Prioridade & Guardar", 
+            height=45, corner_radius=8,
+            fg_color="#2563EB", hover_color="#1E4FD8", font=("Segoe UI", 14, "bold"),
             command=self.salvar_triagem
-        ).pack(pady=15)
+        ).pack(pady=25, fill="x", padx=45)
 
-    # =========================
+    # =========================================================================
     # SALVAR TRIAGEM
-    # =========================
+    # =========================================================================
     def salvar_triagem(self):
-
         if not hasattr(self, "consulta_id"):
-            messagebox.showerror("Erro", "Selecione uma consulta primeiro")
+            messagebox.showerror("Erro", "Selecione uma consulta primeiro.")
             return
 
         dados = {
@@ -294,7 +273,7 @@ class TriagemContent:
             "spo2": self.sat.get(),
             "frequencia_cardiaca": self.fc.get(),
             "pressao": self.pressao.get(),
-            "sintomas": self.sintomas.get("1.0", "end")
+            "sintomas": self.sintomas.get("1.0", "end-1c")
         }
 
         prioridade, score = calcular_prioridade(dados)
@@ -314,8 +293,8 @@ class TriagemContent:
         self.janela_triagem.destroy()
 
         messagebox.showinfo(
-            "Triagem concluída",
-            f"Prioridade: {prioridade}\nScore: {score}"
+            "Triagem Concluída",
+            f"Paciente triado com sucesso!\n\nPrioridade: {prioridade}\nScore: {score}"
         )
 
         self.refresh_table()

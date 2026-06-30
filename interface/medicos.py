@@ -2,6 +2,7 @@ import customtkinter as ctk
 from tkinter import messagebox
 from database.database import conectar, listar_medicos
 from interface._base import _topbar_base
+from utils.helpers import centralizar_janela
 
 
 class MedicosContent:
@@ -18,6 +19,7 @@ class MedicosContent:
         janela.geometry("400x550")
         janela.resizable(False, False)
         janela.grab_set()
+        centralizar_janela(janela, 500, 400)
 
         ctk.CTkLabel(janela, text="Novo Médico", font=("Segoe UI", 20, "bold")).pack(pady=20)
 
