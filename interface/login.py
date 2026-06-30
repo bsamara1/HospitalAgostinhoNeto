@@ -208,7 +208,7 @@ class LoginContent:
         ).pack(pady=(5, 20))
 
     # ==================================================
-    # LOGIN LOGIC
+    # LOGIN LOGICA
     # ==================================================
     def _login(self):
 
@@ -236,12 +236,13 @@ class LoginContent:
             conn.close()
 
             if not user:
-                messagebox.showerror("Erro", "Credenciais inválidas.")
+                messagebox.showerror(
+                    "Erro",
+                    "Credenciais inválidas."
+                )
                 return
 
             id_user, nome, username, perfil, email, telefone = user
-
-            messagebox.showinfo("Sucesso", f"Bem-vindo {nome}")
 
             sessao = {
                 "id": id_user,
@@ -252,13 +253,17 @@ class LoginContent:
                 "telefone": telefone
             }
 
+            messagebox.showinfo(
+                "Sucesso",
+                f"Bem-vindo {nome}"
+            )
+
+            # Envia a sessão para a aplicação principal
             if self.on_success:
                 self.on_success(sessao)
 
         except sqlite3.Error as erro:
-            messagebox.showerror("Erro", f"Erro na base de dados:\n{erro}")
-
-    # ==================================================
-    # ABRIR CRIAR CONTA
-    # ==================================================
-    
+            messagebox.showerror(
+                "Erro",
+                f"Erro na base de dados:\n{erro}"
+            )

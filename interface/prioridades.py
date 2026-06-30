@@ -2,6 +2,7 @@ import customtkinter as ctk
 from tkinter import messagebox
 from database.database import conectar, listar_prioridades
 from interface._base import _topbar_base
+from utils.helpers import centralizar_janela
 
 
 class PrioridadesContent:
@@ -21,6 +22,7 @@ class PrioridadesContent:
         janela.geometry("400x400")
         janela.resizable(False, False)
         janela.grab_set()  # Bloqueia a janela de trás até fechar esta
+        centralizar_janela(janela, 450, 300)
 
         ctk.CTkLabel(janela, text="Nova Prioridade", font=("Segoe UI", 20, "bold")).pack(pady=20)
 
