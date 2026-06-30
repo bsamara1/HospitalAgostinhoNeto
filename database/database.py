@@ -224,8 +224,6 @@ def listar_prioridades(filtro_prioridade="Todos"):
     conn.close()
     return dados
 
-<<<<<<< HEAD
-=======
 def guardar_triagem(
     consulta_id,
     prioridade,
@@ -274,7 +272,6 @@ def guardar_triagem(
     conn.commit()
     conn.close()
 
->>>>>>> ffe469d85f5e4ece0417cc81e3d0ba3aa256b428
 def atualizar_prioridade_consulta(consulta_id, nova_prioridade):
     conn = conectar()
     cursor = conn.cursor()
@@ -282,7 +279,6 @@ def atualizar_prioridade_consulta(consulta_id, nova_prioridade):
                    (nova_prioridade, consulta_id))
     conn.commit()
     conn.close()
-<<<<<<< HEAD
     
 def listar_consultas_geral(filtro_estado="Todos"):
     """Lista as consultas trazendo os nomes dos pacientes e dos médicos para preencher as tabelas."""
@@ -402,7 +398,6 @@ def eliminar_historico_cancelamentos():
     conn.commit()
     conn.close()
     return True
-=======
 
 def calcular_prioridade(dados):
     score = 0
@@ -500,4 +495,3 @@ def listar_fila_triagem():
     dados = cur.fetchall()
     conn.close()
     return dados
->>>>>>> ffe469d85f5e4ece0417cc81e3d0ba3aa256b428
