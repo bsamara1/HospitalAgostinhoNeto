@@ -241,7 +241,6 @@ class LoginContent:
 
             id_user, nome, username, perfil, email, telefone = user
 
-            messagebox.showinfo("Sucesso", f"Bem-vindo {nome}")
 
             sessao = {
                 "id": id_user,
