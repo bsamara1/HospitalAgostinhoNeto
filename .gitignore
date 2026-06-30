@@ -12,3 +12,6 @@ __pycache__/
 
 # VS Code
 .vscode/
+
+# Base de dados (gerada automaticamente ao iniciar a app)
+database/*.db
