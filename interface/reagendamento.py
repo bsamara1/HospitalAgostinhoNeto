@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from tkinter import messagebox
+from utils.helpers import centralizar_janela
 
 class ReagendamentoContent:
 
@@ -15,6 +16,7 @@ class ReagendamentoContent:
         janela.geometry("400x400")
         janela.resizable(False, False)
         janela.grab_set()
+        centralizar_janela(janela, 450, 350)
 
         ctk.CTkLabel(janela, text="Reagendar por ID do Paciente", font=("Segoe UI", 20, "bold")).pack(pady=20)
 
