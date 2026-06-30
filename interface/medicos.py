@@ -8,7 +8,6 @@ class MedicosContent:
 
     def __init__(self, parent):
         self.parent = parent
-        _topbar_base(parent, "Médicos")
         self.header()
         self.search_area()
         self.table_area()

@@ -8,7 +8,6 @@ class PacientesContent:
 
     def __init__(self, parent):
         self.parent = parent
-        _topbar_base(parent, "Pacientes")
         self.header()
         self.search_area()
         self.table_area()
@@ -63,6 +62,36 @@ class PacientesContent:
         messagebox.showinfo("Sucesso", "Paciente adicionado com sucesso!")
         self.refresh_table()
 
+    # =========================================================================
+    # NOVA FUNÇÃO: Executada quando clicas no botão Eliminar da tabela
+    # =========================================================================
+    def eliminar_paciente_acao(self, paciente_id):
+        if messagebox.askyesno("Confirmar Cancelamento", f"Tens a certeza que desejas ELIMINAR o Paciente ID #{paciente_id}?\nEsta ação irá registá-lo como 'Cancelado' no histórico."):
+            try:
+                # Importa a função inteligente que criámos no teu database.py
+                from database.database import eliminar_e_cancelar_paciente
+                
+                sucesso = eliminar_e_cancelar_paciente(paciente_id)
+                
+                if sucesso:
+                    messagebox.showinfo("Sucesso", f"Paciente #{paciente_id} eliminado e movido para Cancelamentos!")
+                    self.refresh_table()  # Atualiza instantaneamente a tabela de Pacientes
+                else:
+                    messagebox.showerror("Erro", "Não foi possível encontrar este paciente na base de dados.")
+            except Exception as e:
+                messagebox.showerror("Erro", f"Não foi possível processar: {e}")
+
+    def limpar_todos_acao(self):
+        if messagebox.askyesno("Confirmar Limpeza", "Tens a certeza que desejas apagar TODOS os pacientes e reiniciar os IDs para 1?"):
+            try:
+                from database.database import limpar_todos_pacientes_e_id
+                
+                limpar_todos_pacientes_e_id()
+                messagebox.showinfo("Sucesso", "Todos os pacientes foram eliminados e o próximo ID será o 1!")
+                self.refresh_table() # Atualiza a tabela no ecrã (ficará vazia)
+            except Exception as e:
+                messagebox.showerror("Erro", f"Não foi possível limpar: {e}")
+
     def header(self):
         header = ctk.CTkFrame(self.parent, fg_color="#F4F6FB", height=90)
         header.pack(fill="x", padx=35, pady=(25, 15))
@@ -73,13 +102,27 @@ class PacientesContent:
         ctk.CTkLabel(left, text="Pacientes", font=("Segoe UI", 30, "bold"), text_color="#183153").pack(anchor="w")
         ctk.CTkLabel(left, text="Gerir todos os pacientes registados.", font=("Segoe UI", 14), text_color="#6B7280").pack(anchor="w", pady=(3, 0))
 
+        # Contentor para os botões do lado direito
+        botoes_frame = ctk.CTkFrame(header, fg_color="transparent")
+        botoes_frame.pack(side="right")
+
+        # NOVO BOTÃO: Limpar Tudo e Reiniciar ID
         ctk.CTkButton(
-            header, text="+ Adicionar Paciente",
+            botoes_frame, text="🗑️ Limpar Tudo",
+            width=140, height=45, corner_radius=8,
+            fg_color="#374151", hover_color="#1F2937",
+            font=("Segoe UI", 14, "bold"),
+            command=self.limpar_todos_acao,
+        ).pack(side="left", padx=(0, 10))
+
+        # Botão que já tinhas de Adicionar Paciente
+        ctk.CTkButton(
+            botoes_frame, text="+ Adicionar Paciente",
             width=190, height=45, corner_radius=8,
             fg_color="#2563EB", hover_color="#1E4FD8",
             font=("Segoe UI", 15, "bold"),
             command=self.abrir_form_paciente,
-        ).pack(side="right")
+        ).pack(side="left")
 
     def search_area(self):
         filtros = ctk.CTkFrame(self.parent, fg_color="transparent")
@@ -105,7 +148,7 @@ class PacientesContent:
         self.table_header()
 
         self.body = ctk.CTkScrollableFrame(self.content, fg_color="white", corner_radius=0)
-        self.body.pack(fill="x", expand=False)
+        self.body.pack(fill="both", expand=True)  # Mudado para fill="both" para aceitar o scroll vertical direito
 
         self.table_rows()
         self.table_footer()
@@ -115,16 +158,18 @@ class PacientesContent:
         header.pack(fill="x", pady=(0, 2))
         header.pack_propagate(False)
 
-        for texto, largura in [("ID", 60), ("Nome", 200), ("Sexo", 90), ("Idade", 80), ("Telefone", 160), ("BI", 170), ("Morada", 170), ("Ações", 100)]:
+        for texto, largura in [("ID", 60), ("Nome", 200), ("Sexo", 90), ("Idade", 80), ("Telefone", 160), ("BI", 170), ("Morada", 170), ("Ações", 210)]:
             ctk.CTkLabel(header, text=texto, width=largura, anchor="w", font=("Segoe UI", 13, "bold"), text_color="#475467").pack(side="left", padx=2)
 
         ctk.CTkFrame(self.content, height=1, fg_color="#E5E7EB").pack(fill="x")
 
     def table_rows(self):
         pacientes = listar_pacientes()
-        larguras = [60, 200, 90, 80, 160, 170, 100]
+        larguras = [60, 200, 90, 80, 160, 170, 170] # Alinhada a largura da morada de acordo com o header
 
         for i, paciente in enumerate(pacientes):
+            p_id = paciente[0]  # O primeiro item é o ID do paciente
+
             linha = ctk.CTkFrame(self.body, fg_color="white", height=68)
             linha.pack(fill="x")
             linha.pack_propagate(False)
@@ -140,7 +185,12 @@ class PacientesContent:
             acoes.pack_propagate(False)
 
             ctk.CTkButton(acoes, text="Editar", width=75, height=34, corner_radius=8, fg_color="#2563EB", hover_color="#1D4ED8", text_color="white", font=("Segoe UI", 12, "bold")).pack(side="left", padx=(10, 5), pady=10)
-            ctk.CTkButton(acoes, text="Eliminar", width=85, height=34, corner_radius=8, fg_color="#EF4444", hover_color="#DC2626", text_color="white", font=("Segoe UI", 12, "bold")).pack(side="left", padx=5, pady=10)
+            
+            # ALTERADO: O botão Eliminar agora executa a nossa função passando o ID correto da linha!
+            ctk.CTkButton(acoes, text="Eliminar", width=85, height=34, corner_radius=8, 
+                          fg_color="#EF4444", hover_color="#DC2626", text_color="white", 
+                          font=("Segoe UI", 12, "bold"),
+                          command=lambda id_atual=p_id: self.eliminar_paciente_acao(id_atual)).pack(side="left", padx=5, pady=10)
 
             if i < len(pacientes) - 1:
                 ctk.CTkFrame(self.body, height=1, fg_color="#F1F5F9").pack(fill="x", padx=15)
@@ -161,5 +211,13 @@ class PacientesContent:
             ctk.CTkButton(paginas, text=label, width=36, height=36, corner_radius=8, fg_color=cor, border_width=1, border_color="#D0D5DD", text_color=texto_cor, hover_color="#F9FAFB").pack(side="left", padx=3)
 
     def refresh_table(self):
-        self.card.destroy()
+        # 1. Limpa todas as linhas antigas que ficaram desenhadas no ecrã
+        for widget in self.body.winfo_children():
+            widget.destroy()
+            
+        # 2. Destrói o card antigo por completo para forçar a reconstrução total
+        if hasattr(self, 'card') and self.card:
+            self.card.destroy()
+            
+        # 3. Desenha a tabela novamente (agora totalmente atualizada a partir do banco de dados)
         self.table_area()

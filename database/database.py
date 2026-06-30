@@ -13,11 +13,10 @@ def conectar():
 
 
 def criar_tabelas():
-
     conn = conectar()
     cursor = conn.cursor()
 
-    # 1. Tabela de Utilizadores (com os campos email e telefone integrados)
+    # 1. Tabela de Utilizadores
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS utilizadores(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -30,6 +29,7 @@ def criar_tabelas():
     )
     """)
 
+    # 2. Tabela de Médicos
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS medicos(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,6 +42,7 @@ def criar_tabelas():
     """)
     
 
+    # 3. Tabela de Pacientes
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS pacientes(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -83,6 +84,7 @@ def criar_tabelas():
         FOREIGN KEY(medico) REFERENCES medicos(id)
     )
     """)
+<<<<<<< HEAD
     
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS notificacoes(
@@ -95,6 +97,31 @@ def criar_tabelas():
         FOREIGN KEY(paciente) REFERENCES pacientes(id)
     )
     """)
+=======
+    # GARANTE QUE ESTA TABELA ESTÁ AQUI ESCRITA EXATAMENTE ASSIM:
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS historico_consultas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        paciente_nome TEXT,
+        tipo_acao TEXT,
+        data_antiga TEXT,
+        data_nova TEXT,
+        motivo TEXT
+    )
+    """)
+    # 5. NOVA TABELA: Prioridades
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS prioridades(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        paciente_id INTEGER,
+        nivel TEXT,
+        medico TEXT,
+        hora_chegada TEXT,
+        FOREIGN KEY(paciente_id) REFERENCES pacientes(id)
+    )
+    """)
+
+>>>>>>> 2de250fbb3a2e09114d8ed03da3fc5cf58b589ad
     conn.commit()
     conn.close()
 
@@ -187,31 +214,35 @@ def listar_medicos():
 def listar_prioridades(filtro_prioridade="Todos"):
     conn = conectar()
     cursor = conn.cursor()
+    
+    # Busca os dados de prioridade juntando com o nome vindo da tabela de pacientes
     query = """
-        SELECT c.id, p.nome, c.prioridade, c.hora, m.nome
-        FROM consultas c
-        JOIN pacientes p ON c.paciente = p.id
-        JOIN medicos m ON c.medico = m.id
+        SELECT pr.id, p.nome, pr.nivel, pr.hora_chegada, pr.medico
+        FROM prioridades pr
+        JOIN pacientes p ON pr.paciente_id = p.id
     """
     parametros = []
     if filtro_prioridade != "Todos":
-        query += " WHERE c.prioridade = ?"
+        query += " WHERE pr.nivel = ?"
         parametros.append(filtro_prioridade)
+        
     query += """
         ORDER BY
-            CASE c.prioridade
+            CASE pr.nivel
                 WHEN 'Urgente' THEN 1
                 WHEN 'Alta' THEN 2
                 WHEN 'Média' THEN 3
                 WHEN 'Baixa' THEN 4
                 ELSE 5
-            END, c.hora ASC
+            END, pr.hora_chegada ASC
     """
     cursor.execute(query, parametros)
     dados = cursor.fetchall()
     conn.close()
     return dados
 
+<<<<<<< HEAD
+=======
 def guardar_triagem(
     consulta_id,
     prioridade,
@@ -260,6 +291,7 @@ def guardar_triagem(
     conn.commit()
     conn.close()
 
+>>>>>>> ffe469d85f5e4ece0417cc81e3d0ba3aa256b428
 def atualizar_prioridade_consulta(consulta_id, nova_prioridade):
     conn = conectar()
     cursor = conn.cursor()
@@ -267,6 +299,127 @@ def atualizar_prioridade_consulta(consulta_id, nova_prioridade):
                    (nova_prioridade, consulta_id))
     conn.commit()
     conn.close()
+<<<<<<< HEAD
+    
+def listar_consultas_geral(filtro_estado="Todos"):
+    """Lista as consultas trazendo os nomes dos pacientes e dos médicos para preencher as tabelas."""
+    conn = conectar()
+    cursor = conn.cursor()
+    
+    query = """
+        SELECT c.id, p.nome, m.nome, c.data, c.hora, c.estado
+        FROM consultas c
+        JOIN pacientes p ON c.paciente = p.id
+        JOIN medicos m ON c.medico = m.id
+    """
+    parametros = []
+    if filtro_estado != "Todos":
+        query += " WHERE c.estado = ?"
+        parametros.append(filtro_estado)
+        
+    query += " ORDER BY c.id DESC"
+    cursor.execute(query, parametros)
+    dados = cursor.fetchall()
+    conn.close()
+    return dados
+
+
+def eliminar_e_cancelar_paciente(paciente_id):
+    """Busca o paciente, grava a ação no histórico e elimina-o da tabela de pacientes."""
+    conn = conectar()
+    cursor = conn.cursor()
+    
+    # 1. Busca os dados do paciente antes de eliminá-lo para salvar o nome no histórico
+    cursor.execute("SELECT nome FROM pacientes WHERE id = ?", (paciente_id,))
+    paciente = cursor.fetchone()
+    
+    if not paciente:
+        conn.close()
+        return False  # Paciente não encontrado
+        
+    nome_paciente = paciente[0]
+    
+    # 2. Opcional: Se quiser também remover as consultas pendentes desse paciente para evitar erros de chave estrangeira
+    cursor.execute("DELETE FROM consultas WHERE paciente = ?", (paciente_id,))
+    
+    # 3. Elimina o paciente da tabela de pacientes
+    cursor.execute("DELETE FROM pacientes WHERE id = ?", (paciente_id,))
+    
+    # 4. Adiciona o registo no histórico de consultas (ou tabela de cancelamentos) informando a exclusão
+    cursor.execute("""
+        INSERT INTO historico_consultas(paciente_nome, tipo_acao, data_antiga, data_nova, motivo)
+        VALUES (?, 'Cancelamento', 'Ativo', 'Nenhum (Eliminado)', 'O paciente foi cancelado e removido do sistema')
+    """, (nome_paciente,))
+    
+    conn.commit()
+    conn.close()
+    return True
+    
+
+def listar_historico_cancelamentos():
+    """Procura no histórico todos os registos de cancelamento para exibir na tabela."""
+    conn = conectar()
+    cursor = conn.cursor()
+    # Puxa o ID do histórico, o nome do paciente que foi apagado e a mensagem
+    cursor.execute("""
+        SELECT id, paciente_nome, tipo_acao, motivo 
+        FROM historico_consultas 
+        WHERE tipo_acao = 'Cancelamento' 
+        ORDER BY id DESC
+    """)
+    dados = cursor.fetchall()
+    conn.close()
+    return dados
+
+def reagendar_consulta_por_paciente(paciente_id, nova_data, nova_hora):
+    """Procura a consulta ativa do paciente e altera a data e hora."""
+    conn = conectar()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT id FROM consultas 
+        WHERE paciente = ? AND estado IN ('Em Espera', 'Reagendado')
+        ORDER BY id DESC LIMIT 1
+    """, (paciente_id,))
+    consulta = cursor.fetchone()
+    
+    if not consulta:
+        conn.close()
+        return False
+        
+    cursor.execute("""
+        UPDATE consultas 
+        SET data = ?, hora = ?, estado = 'Reagendado' 
+        WHERE id = ?
+    """, (nova_data, nova_hora, consulta[0]))
+    conn.commit()
+    conn.close()
+    return True
+
+def limpar_todos_pacientes_e_id():
+    conn = conectar()
+    cursor = conn.cursor()
+    
+    # 1. Apaga os dados
+    cursor.execute("DELETE FROM pacientes")
+    
+    # 2. Reseta o contador interno do SQLite para esta tabela
+    cursor.execute("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'pacientes'")
+    
+    conn.commit()
+    conn.close()
+    return True
+
+def eliminar_historico_cancelamentos():
+    """Apaga TODOS os registos de cancelamento do histórico."""
+    conn = conectar()
+    cursor = conn.cursor()
+    # Apaga as linhas onde o tipo_acao é 'Cancelado'
+    cursor.execute("DELETE FROM historico_consultas WHERE tipo_acao = 'Cancelado'")
+    conn.commit()
+    conn.close()
+    return True
+=======
 
 def calcular_prioridade(dados):
     score = 0
@@ -364,6 +517,7 @@ def listar_fila_triagem():
     dados = cur.fetchall()
     conn.close()
     return dados
+<<<<<<< HEAD
 
 
 def proxima_consulta(id_paciente):
@@ -496,3 +650,6 @@ def listar_notificacoes(id_paciente):
     conn.close()
 
     return dados
+=======
+>>>>>>> ffe469d85f5e4ece0417cc81e3d0ba3aa256b428
+>>>>>>> 2de250fbb3a2e09114d8ed03da3fc5cf58b589ad

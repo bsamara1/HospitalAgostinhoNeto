@@ -6,7 +6,6 @@ class DefinicaoContent:
 
     def __init__(self, parent):
         self.parent = parent
-        _topbar_base(parent, "Definições")
         self.main_ui()
 
     def main_ui(self):
