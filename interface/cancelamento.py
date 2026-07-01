@@ -177,5 +177,142 @@ class CancelamentoContent:
         for widget in self.body.winfo_children():
             widget.destroy()
         
+<<<<<<< HEAD
+        elif menu == "Marcações":
+            from interface.Agendamento import Marcacao
+            Marcacao().mainloop() 
+        elif menu == "Reagendamento":
+            from interface.reagendamento import Reagendamento
+            Reagendamento().mainloop() 
+        elif menu == "Dasboard":
+            from interface.dashboard import Dashboard
+            Dashboard().mainloop() 
+        elif menu == "Triagem":
+            from interface.triagem import Triagem
+            Triagem().mainloop() 
+        elif menu == "Prioridades":
+            from interface.prioridades import Prioridades
+            Prioridades().mainloop() 
+        elif menu == "Relatórios":
+            from interface.relatorios import Relatorios
+            Relatorios().mainloop() 
+        elif menu == "Definições":
+            from interface.definicao import Definicao
+            Definicao().mainloop() 
+
+        ctk.CTkButton(
+            self.sidebar,
+            text="Terminar Sessão",
+            image=icon("assets/sair.png"),
+            compound="left",
+            fg_color="transparent",
+            text_color="#FF6B6B",
+            hover_color="#2A3F5F",
+            anchor="w",
+            height=45,
+            command=self.terminar_sessao
+        ).pack(side="bottom", fill="x", padx=15, pady=20)
+        ctk.CTkFrame(
+            self.sidebar,
+            height=1,
+            fg_color="#35506E"
+        ).pack(side="bottom", fill="x", padx=15, pady=(0, 10))
+    def terminar_sessao(self):
+
+        confirmar = messagebox.askyesno(
+            "Terminar Sessão",
+            "Deseja realmente terminar a sessão?"
+        )
+
+        if confirmar:
+            self.destroy()
+
+            import customtkinter as ctk
+            from interface.login import Login
+
+            root = ctk.CTk()
+
+            Login(root)
+
+            root.mainloop()
+    # =========================
+    # MAIN AREA
+    # =========================
+    def main_ui(self):
+
+        self.main = ctk.CTkFrame(self.container, fg_color="#F4F6FB")
+        self.main.pack(side="left", fill="both", expand=True)
+
+        self.topbar()
+
+    # =========================
+    # TOPBAR
+    # =========================
+    def topbar(self):
+
+        topbar = ctk.CTkFrame(self.main, fg_color="#F4F6FB", height=60)
+        topbar.pack(fill="x", padx=20, pady=10)
+
+        ctk.CTkLabel(
+            topbar,
+            text="Cancelamentos",
+            font=("Segoe UI", 22, "bold"),
+            text_color="#0B2A4A"
+        ).pack(side="left",padx=20)
+        linha = ctk.CTkFrame(
+            self.main,
+            height=1,
+            fg_color="#D8DEE9",
+            corner_radius=0
+        )
+
+        linha.pack(
+            fill="x",
+            pady=(5, 0)
+        )
+
+        avatar = ctk.CTkImage(
+        Image.open("assets/perfil.png"),
+        size=(42,42)
+        )
+
+        user = ctk.CTkFrame(topbar, fg_color="transparent")
+        user.pack(side="right")
+
+        ctk.CTkLabel(
+            user,
+            image=avatar,
+            text=""
+        ).pack(side="left", padx=10)
+
+        texto = ctk.CTkFrame(user, fg_color="transparent")
+        texto.pack(side="left")
+
+        ctk.CTkLabel(
+            texto,
+            text="Administrador",
+            font=("Segoe UI",15,"bold")
+        ).pack(anchor="w")
+
+        ctk.CTkLabel(
+            texto,
+            text="Administrador",
+            text_color="gray"
+        ).pack(anchor="w")
+
+    
+
+  
+  
+
+
+# =========================
+# RUN APP
+# =========================
+if __name__ == "__main__":
+    app = Cancelamento()
+    app.mainloop()
+=======
         # Reconstrói as linhas atualizadas (que agora estarão vazias)
         self.table_rows()
+>>>>>>> e6c7e2e51d53b791fbb4f265798f0f6350352252

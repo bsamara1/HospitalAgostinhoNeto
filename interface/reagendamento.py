@@ -129,6 +129,112 @@ class ReagendamentoContent:
         except Exception as e:
             print(f"Erro ao carregar linhas: {e}")
 
+<<<<<<< HEAD
+            app.mainloop()
+        if menu == "Pacientes":
+            from interface.pacientes import Pacientes
+            Pacientes().mainloop()   
+        
+        elif menu == "Marcações":
+            from interface.Agendamento import Marcacao
+            Marcacao().mainloop() 
+        elif menu == "Dashboard":
+            from interface.dashboard import Dashboard
+            Dashboard().mainloop() 
+        elif menu == "Cancelamento":
+            from interface.cancelamento import Cancelamento
+            Cancelamento().mainloop() 
+        elif menu == "Triagem":
+            from interface.triagem import Triagem
+            Triagem().mainloop() 
+        elif menu == "Prioridades":
+            from interface.prioridades import Prioridades
+            Prioridades().mainloop() 
+        elif menu == "Relatórios":
+            from interface.relatorios import Relatorios
+            Relatorios().mainloop() 
+        elif menu == "Definições":
+            from interface.definicao import Definicao
+            Definicao().mainloop() 
+    # =========================
+    # MAIN AREA
+    # =========================
+    def main_ui(self):
+
+        self.main = ctk.CTkFrame(self.container, fg_color="#F4F6FB")
+        self.main.pack(side="left", fill="both", expand=True)
+
+        self.topbar()
+
+    # =========================
+    # TOPBAR
+    # =========================
+    def topbar(self):
+
+        topbar = ctk.CTkFrame(self.main, fg_color="#F4F6FB", height=60)
+        topbar.pack(fill="x", padx=20, pady=10)
+
+        ctk.CTkLabel(
+            topbar,
+            text="Reagendamnetos",
+            font=("Segoe UI", 22, "bold"),
+            text_color="#0B2A4A"
+        ).pack(side="left",padx=20)
+        linha = ctk.CTkFrame(
+            self.main,
+            height=1,
+            fg_color="#D8DEE9",
+            corner_radius=0
+        )
+
+        linha.pack(
+            fill="x",
+            pady=(5, 0)
+        )
+
+        avatar = ctk.CTkImage(
+        Image.open("assets/perfil.png"),
+        size=(42,42)
+        )
+
+        user = ctk.CTkFrame(topbar, fg_color="transparent")
+        user.pack(side="right")
+
+        ctk.CTkLabel(
+            user,
+            image=avatar,
+            text=""
+        ).pack(side="left", padx=10)
+
+        texto = ctk.CTkFrame(user, fg_color="transparent")
+        texto.pack(side="left")
+
+        ctk.CTkLabel(
+            texto,
+            text="Administrador",
+            font=("Segoe UI",15,"bold")
+        ).pack(anchor="w")
+
+        ctk.CTkLabel(
+            texto,
+            text="Administrador",
+            text_color="gray"
+        ).pack(anchor="w")
+
+    
+
+  
+  
+
+
+# =========================
+# RUN APP
+# =========================
+if __name__ == "__main__":
+    app = Reagendamento()
+    app.mainloop()
+=======
     def refresh_table(self):
         self.card.destroy()
         self.table_area()
+>>>>>>> e6c7e2e51d53b791fbb4f265798f0f6350352252

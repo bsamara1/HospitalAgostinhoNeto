@@ -264,3 +264,4 @@ class LoginContent:
                 "Erro",
                 f"Erro na base de dados:\n{erro}"
             )
+            

@@ -110,9 +110,87 @@ class PrioridadesContent:
         filtros = ctk.CTkFrame(self.parent, fg_color="transparent")
         filtros.pack(fill="x", padx=35, pady=(0, 20))
 
+<<<<<<< HEAD
+                if confirmar:
+                    self.destroy()
+
+                    import customtkinter as ctk
+                    from interface.login import Login
+
+                    root = ctk.CTk()
+
+                    Login(root)
+
+                    root.mainloop()
+    def abrir_menu(self, menu):
+
+        self.destroy()
+
+        if menu == "Médicos":
+            from interface.medicos import Medicos
+
+            Medicos().mainloop()
+
+            app.mainloop()
+        if menu == "Pacientes":
+            from interface.pacientes import Pacientes
+            Pacientes().mainloop()   
+        
+        elif menu == "Marcações":
+            from interface.Agendamento import Marcacao
+            Marcacao().mainloop() 
+        elif menu == "Reagendamento":
+            from interface.reagendamento import Reagendamento
+            Reagendamento().mainloop() 
+        elif menu == "Cancelamento":
+            from interface.cancelamento import Cancelamento
+            Cancelamento().mainloop() 
+        elif menu == "Triagem":
+            from interface.triagem import Triagem
+            Triagem().mainloop() 
+        elif menu == "Dashboard":
+            from interface.dashboard import Dashboard
+            Dashboard().mainloop() 
+        elif menu == "Relatórios":
+            from interface.relatorios import Relatorios
+            Relatorios().mainloop() 
+        elif menu == "Definições":
+            from interface.definicao import Definicao
+            Definicao().mainloop() 
+    # =========================
+    # MAIN AREA
+    # =========================
+    def main_ui(self):
+
+        self.main = ctk.CTkFrame(self.container, fg_color="#F4F6FB")
+        self.main.pack(side="left", fill="both", expand=True)
+
+        self.topbar()
+
+    # =========================
+    # TOPBAR
+    # =========================
+    def topbar(self):
+
+        topbar = ctk.CTkFrame(self.main, fg_color="#F4F6FB", height=60)
+        topbar.pack(fill="x", padx=20, pady=10)
+
+        ctk.CTkLabel(
+            topbar,
+            text="Prioridades",
+            font=("Segoe UI", 22, "bold"),
+            text_color="#0B2A4A"
+        ).pack(side="left",padx=20)
+        linha = ctk.CTkFrame(
+            self.main,
+            height=1,
+            fg_color="#D8DEE9",
+            corner_radius=0
+=======
         self.txt_pesquisa = ctk.CTkEntry(
             filtros, placeholder_text="🔍 Pesquisar por urgente ou médico...",
             height=42, corner_radius=8, border_width=1, font=("Segoe UI", 13),
+>>>>>>> e6c7e2e51d53b791fbb4f265798f0f6350352252
         )
         self.txt_pesquisa.pack(side="left", fill="x", expand=True, padx=(0, 12))
         self.txt_pesquisa.bind("<KeyRelease>", lambda e: self.table_rows())
