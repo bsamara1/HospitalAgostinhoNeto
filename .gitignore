@@ -2,9 +2,16 @@
 venv/
 
 # Cache do Python
-__pycache__/
-*.pyc
+**/__pycache__/
+*.py[cod]
+*$py.class
 
+# Base de dados SQLite
+*.db
+*.sqlite3
 
-# Configurações do VS Code
+# VS Code
 .vscode/
+
+# Base de dados (gerada automaticamente ao iniciar a app)
+database/*.db

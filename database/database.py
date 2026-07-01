@@ -1,39 +1,55 @@
 import sqlite3
 import os
+import random
 
-# Use an absolute path for the database file (next to this module)
+# =========================
+# CONFIGURAÇÃO
+# =========================
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 os.makedirs(BASE_DIR, exist_ok=True)
+
 DATABASE = os.path.join(BASE_DIR, "hospital.db")
+
 
 def conectar():
     return sqlite3.connect(DATABASE)
 
 
-def criar_tabelas():
+# =========================
+# CRIAÇÃO DAS TABELAS
+# =========================
 
+def criar_tabelas():
     conn = conectar()
     cursor = conn.cursor()
 
+    # UTILIZADORES (LOGIN)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS utilizadores(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nome TEXT,
         username TEXT UNIQUE,
         senha TEXT,
-        perfil TEXT
+        perfil TEXT,
+        email TEXT UNIQUE,
+        telefone TEXT
     )
     """)
 
+    # MÉDICOS
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS medicos(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nome TEXT,
+        email TEXT UNIQUE,
         especialidade TEXT,
-        horario TEXT
+        telefone TEXT,
+        estado TEXT
     )
     """)
 
+    # PACIENTES
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS pacientes(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,10 +59,12 @@ def criar_tabelas():
         telefone TEXT,
         bi TEXT,
         nascimento TEXT,
-        morada TEXT
+        morada TEXT,
+        estado TEXT
     )
     """)
 
+    # CONSULTAS
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS consultas(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -60,10 +78,83 @@ def criar_tabelas():
         FOREIGN KEY(medico) REFERENCES medicos(id)
     )
     """)
-    conn.commit()
-    conn.close()
-def criar_admin():
 
+    # TRIAGEM
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS triagem(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        consulta_id INTEGER UNIQUE,
+        temperatura TEXT,
+        pressao TEXT,
+        freq_cardiaca TEXT,
+        saturacao TEXT,
+        freq_respiratoria TEXT,
+        glicemia TEXT,
+        notas TEXT,
+        triada_em TEXT,
+        FOREIGN KEY(consulta_id) REFERENCES consultas(id)
+    )
+    """)
+
+    # NOTIFICAÇÕES
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS notificacoes(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        paciente INTEGER,
+        titulo TEXT,
+        mensagem TEXT,
+        data TEXT,
+        lida INTEGER DEFAULT 0,
+        FOREIGN KEY(paciente) REFERENCES pacientes(id)
+    )
+    """)
+
+    # HISTÓRICO
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS historico_consultas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        paciente_nome TEXT,
+        tipo_acao TEXT,
+        data_antiga TEXT,
+        data_nova TEXT,
+        motivo TEXT
+    )
+    """)
+
+    # PRIORIDADES
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS prioridades(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        paciente_id INTEGER,
+        nivel TEXT,
+        medico TEXT,
+        hora_chegada TEXT,
+        FOREIGN KEY(paciente_id) REFERENCES pacientes(id)
+    )
+    """)
+
+    conn.commit()
+
+    cursor.execute("PRAGMA table_info(utilizadores)")
+    colunas = [col[1] for col in cursor.fetchall()]
+    if "paciente_id" not in colunas:
+        cursor.execute("ALTER TABLE utilizadores ADD COLUMN paciente_id INTEGER")
+        conn.commit()
+
+    cursor.execute("PRAGMA table_info(pacientes)")
+    paciente_colunas = [col[1] for col in cursor.fetchall()]
+    if "estado" not in paciente_colunas:
+        cursor.execute("ALTER TABLE pacientes ADD COLUMN estado TEXT")
+        conn.commit()
+
+    conn.close()
+
+
+# =========================
+# ADMIN
+# =========================
+
+def criar_admin():
     conn = conectar()
     cursor = conn.cursor()
 
@@ -71,84 +162,210 @@ def criar_admin():
     INSERT OR IGNORE INTO utilizadores
     (nome, username, senha, perfil)
     VALUES (?, ?, ?, ?)
-    """, (
-        "Administrador",
-        "admin",
-        "1234",
-        "Administrador"
-    ))
+    """, ("Administrador", "admin", "1234", "Administrador"))
 
     conn.commit()
     conn.close()
 
-def consultas_hoje():
 
+# =========================
+# UTILIZADORES (LOGIN)
+# =========================
+
+def username_existe(username):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT 1 FROM utilizadores WHERE username = ?", (username,))
+    existe = cursor.fetchone() is not None
+
+    conn.close()
+    return existe
+
+
+def gerar_username(email):
+    base = email.split("@")[0].lower()
+    username = base
+    contador = 1
+
+    while username_existe(username):
+        username = f"{base}{contador}"
+        contador += 1
+
+    return username
+
+
+def recuperar_credenciais(email):
+    def criar_paciente_teste():
+        conn = conectar()
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT id FROM utilizadores WHERE username = ?", ("paciente1",))
+        if cursor.fetchone():
+            conn.close()
+            return
+
+        cursor.execute("""
+            INSERT INTO pacientes(nome, sexo, idade, telefone, bi, nascimento, morada, estado)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            "Paciente Teste",
+            "Não definido",
+            30,
+            "912345678",
+            "",
+            "",
+            "",
+            "Ativo"
+        ))
+        paciente_id = cursor.lastrowid
+
+        cursor.execute("""
+            INSERT INTO utilizadores(nome, username, senha, perfil, email, telefone, paciente_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            "Paciente Teste",
+            "paciente1",
+            "1234",
+            "paciente",
+            "paciente1@example.com",
+            "912345678",
+            paciente_id
+        ))
+
+        conn.commit()
+        conn.close()
+
+
+    def inserir_medico(nome, email, especialidade, telefone, estado):
+        conn = conectar()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT username, senha
+            FROM utilizadores
+            WHERE email = ?
+        """, (email,))
+
+        dados = cursor.fetchone()
+        conn.close()
+
+        return dados
+
+
+# =========================
+# MÉDICOS + LOGIN AUTOMÁTICO
+# =========================
+
+def email_existe(email):
     conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT
-            p.nome,
-            m.nome,
-            c.hora,
-            c.prioridade,
-            c.estado
+        SELECT 1 FROM utilizadores WHERE email = ?
+    """, (email,))
+
+    existe = cursor.fetchone() is not None
+    conn.close()
+    return existe
+
+
+def criar_medico_com_login(nome, email, especialidade, telefone, estado):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    # evita duplicação de email
+    if email_existe(email):
+        conn.close()
+        return None, None
+
+    # 1. médico
+    cursor.execute("""
+        INSERT INTO medicos(nome, email, especialidade, telefone, estado)
+        VALUES (?, ?, ?, ?, ?)
+    """, (nome, email, especialidade, telefone, estado))
+
+    # 2. login automático
+    username = gerar_username(email)
+    senha = str(random.randint(1000, 9999))
+
+    cursor.execute("""
+        INSERT INTO utilizadores(nome, username, senha, perfil, email, telefone)
+        VALUES (?, ?, ?, 'Medico', ?, ?)
+    """, (nome, username, senha, email, telefone))
+
+    conn.commit()
+    conn.close()
+
+    return username, senha
+
+
+def inserir_medico(nome, email, especialidade, telefone, estado):
+    return criar_medico_com_login(nome, email, especialidade, telefone, estado)
+
+
+# =========================
+# CONSULTAS
+# =========================
+
+def consultas_hoje():
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT p.nome, m.nome, c.hora, c.prioridade, c.estado
         FROM consultas c
-        JOIN pacientes p
-            ON c.paciente = p.id
-        JOIN medicos m
-            ON c.medico = m.id
+        JOIN pacientes p ON c.paciente = p.id
+        JOIN medicos m ON c.medico = m.id
         WHERE c.data = date('now')
         ORDER BY c.hora
     """)
 
     dados = cursor.fetchall()
-
     conn.close()
-
     return dados
+
 
 def consultar_prioridade():
     conn = conectar()
     cursor = conn.cursor()
+
     cursor.execute("""
-        SELECT prioridade,
-COUNT(*)
-FROM consultas
-WHERE data=date('now')
-GROUP BY prioridade
+        SELECT prioridade, COUNT(*)
+        FROM consultas
+        WHERE data = date('now')
+        GROUP BY prioridade
     """)
 
     dados = cursor.fetchall()
-
     conn.close()
-
     return dados
+
 
 def consultar_agenda_medicos():
     conn = conectar()
     cursor = conn.cursor()
+
     cursor.execute("""
-        SELECT
-nome,
-especialidade,
-horario
-FROM medicos;
+        SELECT nome, especialidade, estado FROM medicos
     """)
 
     dados = cursor.fetchall()
-
     conn.close()
-
     return dados
 
-def listar_pacientes():
+
+# =========================
+# LISTAR MÉDICOS
+# =========================
+
+def listar_medicos():
     conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT id, nome, sexo, idade, telefone, bi, morada
-        FROM pacientes
+        SELECT id, nome, email, especialidade, telefone, estado
+        FROM medicos
         ORDER BY id DESC
     """)
 

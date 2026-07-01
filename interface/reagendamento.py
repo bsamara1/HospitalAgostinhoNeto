@@ -1,151 +1,135 @@
 import customtkinter as ctk
-from PIL import Image
 from tkinter import messagebox
+from utils.helpers import centralizar_janela
 
-class Reagendamento(ctk.CTk):
+class ReagendamentoContent:
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        self.parent = parent
+        self.header()
+        self.search_area()
+        self.table_area()
 
-        self.title("HAN - Hospital Agostinho Neto")
-        self.state("zoomed")
-        self.configure(fg_color="#F4F6FB")
+    def abrir_form_reagendamento(self):
+        janela = ctk.CTkToplevel(self.parent)
+        janela.title("Reagendar Consulta")
+        janela.geometry("400x400")
+        janela.resizable(False, False)
+        janela.grab_set()
+        centralizar_janela(janela, 450, 350)
 
-        self.ui()
+        ctk.CTkLabel(janela, text="Reagendar por ID do Paciente", font=("Segoe UI", 20, "bold")).pack(pady=20)
 
-    # =========================
-    # UI PRINCIPAL
-    # =========================
-    def ui(self):
+        self.paciente_id = ctk.CTkEntry(janela, placeholder_text="Digite o ID do Paciente")
+        self.paciente_id.pack(pady=10, fill="x", padx=20)
 
-        self.container = ctk.CTkFrame(self, fg_color="#F4F6FB")
-        self.container.pack(fill="both", expand=True)
+        self.nova_data = ctk.CTkEntry(janela, placeholder_text="Nova Data (YYYY-MM-DD)")
+        self.nova_data.pack(pady=10, fill="x", padx=20)
 
-        self.sidebar_ui()
-        self.main_ui()
+        self.nova_hora = ctk.CTkEntry(janela, placeholder_text="Nova Hora (HH:MM)")
+        self.nova_hora.pack(pady=10, fill="x", padx=20)
 
-    # =========================
-    # SIDEBAR
-    # =========================
-    def sidebar_ui(self):
+        self._form_janela = janela
+        ctk.CTkButton(janela, text="Guardar Reagendamento", fg_color="#2563EB", hover_color="#1E4FD8", 
+                      font=("Segoe UI", 13, "bold"), command=self.guardar_reagendamento).pack(pady=20)
 
-        self.sidebar = ctk.CTkFrame(
-            self.container,
-            width=240,
-            fg_color="#0B2A4A"
-        )
-        self.sidebar.pack(side="left", fill="y")
-        self.sidebar.pack_propagate(False)
+    def guardar_reagendamento(self):
+        id_p = self.paciente_id.get()
+        data = self.nova_data.get()
+        hora = self.nova_hora.get()
 
-        logo = ctk.CTkImage(Image.open("assets/logo.png"), size=(40, 40))
+        if not id_p or not data or not hora:
+            messagebox.showwarning("Aviso", "Por favor, preencha todos os campos.")
+            return
 
-        logo_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
-        logo_frame.pack(pady=(25, 35), padx=20, fill="x")
+        try:
+            # Importação segura para evitar tela branca
+            from database.database import reagendar_consulta_por_paciente
+            
+            sucesso = reagendar_consulta_por_paciente(id_p, data, hora)
+            
+            if not sucesso:
+                messagebox.showerror("Erro", f"Não foi encontrada nenhuma consulta ativa para o Paciente ID #{id_p}.")
+                return
+            
+            self._form_janela.destroy()
+            messagebox.showinfo("Sucesso", f"Consulta do Paciente #{id_p} reagendada com sucesso!")
+            self.refresh_table()
 
-        ctk.CTkLabel(logo_frame, image=logo, text="").grid(row=0, column=0, rowspan=2, padx=10)
+        except Exception as e:
+            messagebox.showerror("Erro", f"Não foi possível reagendar: {e}")
 
-        ctk.CTkLabel(
-            logo_frame,
-            text="HAN",
-            font=("Segoe UI", 20, "bold"),
-            text_color="white"
-        ).grid(row=0, column=1, sticky="w")
+    def header(self):
+        header = ctk.CTkFrame(self.parent, fg_color="#F4F6FB", height=90)
+        header.pack(fill="x", padx=35, pady=(25, 15))
+        header.pack_propagate(False)
 
-        ctk.CTkLabel(
-            logo_frame,
-            text="Hospital Agostinho Neto",
-            font=("Segoe UI", 13),
-            text_color="#D6E4F0"
-        ).grid(row=1, column=1, sticky="w")
+        left = ctk.CTkFrame(header, fg_color="transparent")
+        left.pack(side="left")
+        ctk.CTkLabel(left, text="Reagendamento", font=("Segoe UI", 30, "bold"), text_color="#183153").pack(anchor="w")
+        ctk.CTkLabel(left, text="Modificar datas e horários de consultas marcadas.", font=("Segoe UI", 14), text_color="#6B7280").pack(anchor="w", pady=(3, 0))
 
-        # ICONS
-        def icon(path):
-            return ctk.CTkImage(Image.open(path), size=(20, 20))
-
-        menu = [
-            ("Painel Principal", icon("assets/casa.png")),
-            ("Pacientes", icon("assets/utilizadores.png")),
-            ("Médicos", icon("assets/perfil.png")),
-            ("Marcações", icon("assets/agendar.png")),
-            ("Reagendamento", icon("assets/reagendar.png")),
-            ("Cancelamento", icon("assets/cancelar.png")),
-            ("Triagem", icon("assets/triagem.png")),
-            ("Prioridades", icon("assets/prioridade.png")),
-            ("Relatórios", icon("assets/relatorio.png")),
-            ("Definições", icon("assets/definicao.png")),
-        ]
-
-        # MENU
-        for text, ic in menu:
-
-            ctk.CTkButton(
-                self.sidebar,
-                text=text,
-                image=ic,
-                compound="left",
-                fg_color="transparent",
-                text_color="white",
-                anchor="w",
-                hover_color="#11457B",
-                height=45,
-                command=lambda nome=text: self.abrir_menu(nome)
-            ).pack(
-                fill="x",
-                padx=15,
-                pady=3
-            )
-
-
-        # TERMINAR SESSÃO (fora do for)
         ctk.CTkButton(
-                self.sidebar,
-                text="Terminar Sessão",
-                image=icon("assets/sair.png"),
-                compound="left",
-                fg_color="transparent",
-                text_color="#FF6B6B",
-                hover_color="#2A3F5F",
-                anchor="w",
-                height=45,
-                command=self.terminar_sessao
-                ).pack(
-                side="bottom",
-                fill="x",
-                padx=15,
-                pady=20
-                )
-        ctk.CTkFrame(
-                    self.sidebar,
-                    height=1,
-                    fg_color="#35506E"
-                ).pack(side="bottom", fill="x", padx=15, pady=(0, 10))
-    def terminar_sessao(self):
+            header, text="+ Reagendar Consulta",
+            width=190, height=45, corner_radius=8,
+            fg_color="#2563EB", hover_color="#1E4FD8",
+            font=("Segoe UI", 15, "bold"),
+            command=self.abrir_form_reagendamento,
+        ).pack(side="right")
 
-                confirmar = messagebox.askyesno(
-                    "Terminar Sessão",
-                    "Deseja realmente terminar a sessão?"
-                )
+    def search_area(self):
+        filtros = ctk.CTkFrame(self.parent, fg_color="transparent")
+        filtros.pack(fill="x", padx=35, pady=(0, 20))
 
-                if confirmar:
-                    self.destroy()
+        self.txt_pesquisa = ctk.CTkEntry(filtros, placeholder_text="🔍 Pesquisar...", height=45, corner_radius=8)
+        self.txt_pesquisa.pack(side="left", fill="x", expand=True)
 
-                    import customtkinter as ctk
-                    from interface.login import Login
+    def table_area(self):
+        self.card = ctk.CTkFrame(self.parent, fg_color="white", corner_radius=12, border_width=1, border_color="#E4E7EC")
+        self.card.pack(fill="both", expand=True, padx=35, pady=(0, 25))
+        self.content = ctk.CTkFrame(self.card, fg_color="white", corner_radius=12)
+        self.content.pack(fill="both", expand=True)
+        self.table_header()
+        self.body = ctk.CTkScrollableFrame(self.content, fg_color="white", corner_radius=0)
+        self.body.pack(fill="both", expand=True)
+        self.table_rows()
 
-                    root = ctk.CTk()
+    def table_header(self):
+        header = ctk.CTkFrame(self.content, fg_color="#C9C9C9", height=65, corner_radius=0)
+        header.pack(fill="x", pady=(0, 2))
+        header.pack_propagate(False)
+        for texto, largura in [("ID", 60), ("Paciente", 180), ("Médico", 180), ("Data", 120), ("Hora", 100), ("Estado", 130)]:
+            ctk.CTkLabel(header, text=texto, width=largura, anchor="w", font=("Segoe UI", 13, "bold"), text_color="#475467").pack(side="left", padx=5)
 
-                    Login(root)
+    def table_rows(self):
+        try:
+            from database.database import listar_consultas_geral
+            consultas = listar_consultas_geral("Todos")
+            larguras = [60, 180, 180, 120, 100, 130]
 
-                    root.mainloop()
-    def abrir_menu(self, menu):
+            for i, consulta in enumerate(consultas):
+                linha = ctk.CTkFrame(self.body, fg_color="white", height=68)
+                linha.pack(fill="x")
+                linha.pack_propagate(False)
 
-        self.destroy()
+                estado = consulta[5]
+                cor_estado = {"Cancelado": "#EF4444", "Em Espera": "#3B82F6", "Reagendado": "#F59E0B"}.get(estado, "#344054")
 
-        if menu == "Médicos":
-            from interface.medicos import Medicos
+                for valor, largura in zip(consulta, larguras):
+                    cel = ctk.CTkFrame(linha, width=largura, fg_color="white")
+                    cel.pack(side="left", fill="y")
+                    cel.pack_propagate(False)
+                    lbl = ctk.CTkLabel(cel, text=str(valor), anchor="w", font=("Segoe UI", 13), text_color="#344054")
+                    lbl.pack(fill="both", padx=12)
+                    if str(valor) == estado:
+                        lbl.configure(text_color=cor_estado, font=("Segoe UI", 13, "bold"))
 
-            Medicos().mainloop()
+                if i < len(consultas) - 1:
+                    ctk.CTkFrame(self.body, height=1, fg_color="#F1F5F9").pack(fill="x", padx=15)
+        except Exception as e:
+            print(f"Erro ao carregar linhas: {e}")
 
+<<<<<<< HEAD
             app.mainloop()
         if menu == "Pacientes":
             from interface.pacientes import Pacientes
@@ -249,3 +233,8 @@ class Reagendamento(ctk.CTk):
 if __name__ == "__main__":
     app = Reagendamento()
     app.mainloop()
+=======
+    def refresh_table(self):
+        self.card.destroy()
+        self.table_area()
+>>>>>>> e6c7e2e51d53b791fbb4f265798f0f6350352252
