@@ -141,7 +141,7 @@ class Dashboard(ctk.CTk):
             Pacientes().mainloop()   
         
         elif menu == "Marcações":
-            from interface.marcacao import Marcacao
+            from interface.Agendamento import Marcacao
             Marcacao().mainloop() 
         elif menu == "Reagendamento":
             from interface.reagendamento import Reagendamento
