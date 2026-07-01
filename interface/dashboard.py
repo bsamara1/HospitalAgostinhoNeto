@@ -1,22 +1,23 @@
 import customtkinter as ctk
+from PIL import Image  # Faltava importar o Image para carregar os ícones
+from tkinter import messagebox  # Faltava importar para usar o fechar sessão
 from interface.dashboard_base import DashboardBase
 from database.database import consultas_hoje, consultar_prioridade, consultar_agenda_medicos
 
 
 class DashboardAdmin(DashboardBase):
-
-<<<<<<< HEAD
+    
+    def __init__(self, parent):
+        super().__init__(parent, "Painel Administrativo") # Chama a base primeiro
         self.title("HAN - Hospital Agostinho Neto")
         self.state("zoomed")
         self.configure(fg_color="#F4F6FB")
-
-        self.ui()
+        self.ui() # Constrói o resto depois
 
     # =========================
     # UI PRINCIPAL
     # =========================
     def ui(self):
-
         self.container = ctk.CTkFrame(self, fg_color="#F4F6FB")
         self.container.pack(fill="both", expand=True)
 
@@ -27,7 +28,6 @@ class DashboardAdmin(DashboardBase):
     # SIDEBAR
     # =========================
     def sidebar_ui(self):
-
         self.sidebar = ctk.CTkFrame(
             self.container,
             width=240,
@@ -57,7 +57,7 @@ class DashboardAdmin(DashboardBase):
             text_color="#D6E4F0"
         ).grid(row=1, column=1, sticky="w")
 
-        # ICONS
+        # Função auxiliar interna para carregar ícones
         def icon(path):
             return ctk.CTkImage(Image.open(path), size=(20, 20))
 
@@ -65,12 +65,11 @@ class DashboardAdmin(DashboardBase):
             ("Painel Principal", icon("assets/casa.png")),
             ("Pacientes", icon("assets/utilizadores.png")),
             ("Médicos", icon("assets/perfil.png")),
-            ("Marcações", icon("assets/agendar.png")),
+            ("Agendamento", icon("assets/agendar.png")),
             ("Reagendamento", icon("assets/reagendar.png")),
             ("Cancelamento", icon("assets/cancelar.png")),
             ("Triagem", icon("assets/triagem.png")),
             ("Prioridades", icon("assets/prioridade.png")),
-            ("Relatórios", icon("assets/relatorio.png")),
             ("Definições", icon("assets/definicao.png")),
         ]
 
@@ -100,13 +99,17 @@ class DashboardAdmin(DashboardBase):
             height=45,
             command=self.terminar_sessao
         ).pack(side="bottom", fill="x", padx=15, pady=20)
+        
         ctk.CTkFrame(
             self.sidebar,
             height=1,
             fg_color="#35506E"
         ).pack(side="bottom", fill="x", padx=15, pady=(0, 10))
-    def terminar_sessao(self):
 
+    # =========================
+    # AÇÕES DOS BOTÕES (MENU & LOGOUT)
+    # =========================
+    def terminar_sessao(self):
         confirmar = messagebox.askyesno(
             "Terminar Sessão",
             "Deseja realmente terminar a sessão?"
@@ -114,33 +117,27 @@ class DashboardAdmin(DashboardBase):
 
         if confirmar:
             self.destroy()
-
-            import customtkinter as ctk
             from interface.login import Login
-
             root = ctk.CTk()
-
             Login(root)
-
             root.mainloop()
     
     def abrir_menu(self, menu):
+        # Evita fechar a tela se o usuário já clicar no botão do painel que ele já está visualizando
+        if menu == "Painel Principal":
+            return
 
         self.destroy()
 
         if menu == "Médicos":
             from interface.medicos import Medicos
-
             Medicos().mainloop()
-
-            app.mainloop()
-        if menu == "Pacientes":
+        elif menu == "Pacientes":
             from interface.pacientes import Pacientes
             Pacientes().mainloop()   
-        
-        elif menu == "Marcações":
-            from interface.Agendamento import Marcacao
-            Marcacao().mainloop() 
+        elif menu == "Agendamento":
+            from interface.Agendamento import Agendamento
+            Agendamento().mainloop() 
         elif menu == "Reagendamento":
             from interface.reagendamento import Reagendamento
             Reagendamento().mainloop() 
@@ -153,21 +150,15 @@ class DashboardAdmin(DashboardBase):
         elif menu == "Prioridades":
             from interface.prioridades import Prioridades
             Prioridades().mainloop() 
-        elif menu == "Relatórios":
-            from interface.relatorios import Relatorios
-            Relatorios().mainloop() 
         elif menu == "Definições":
             from interface.definicao import Definicao
-            Definicao().mainloop() 
-                
-    
-    
-    
+            Definições_window = Definicao() # Evitado bug de inicialização direta sem variável
+            Definições_window.mainloop() 
+
     # =========================
     # MAIN AREA
     # =========================
     def main_ui(self):
-
         self.main = ctk.CTkFrame(self.container, fg_color="#F4F6FB")
         self.main.pack(side="left", fill="both", expand=True)
 
@@ -179,7 +170,6 @@ class DashboardAdmin(DashboardBase):
     # TOPBAR
     # =========================
     def topbar(self):
-
         topbar = ctk.CTkFrame(self.main, fg_color="#F4F6FB", height=60)
         topbar.pack(fill="x", padx=20, pady=10)
 
@@ -188,23 +178,17 @@ class DashboardAdmin(DashboardBase):
             text="Painel Principal",
             font=("Segoe UI", 22, "bold"),
             text_color="#0B2A4A"
-        ).pack(side="left",padx=20)
+        ).pack(side="left", padx=20)
+        
         linha = ctk.CTkFrame(
             self.main,
             height=1,
             fg_color="#D8DEE9",
             corner_radius=0
         )
+        linha.pack(fill="x", pady=(5, 0))
 
-        linha.pack(
-            fill="x",
-            pady=(5, 0)
-        )
-
-        avatar = ctk.CTkImage(
-        Image.open("assets/perfil.png"),
-        size=(42,42)
-        )
+        avatar = ctk.CTkImage(Image.open("assets/perfil.png"), size=(42, 42))
 
         user = ctk.CTkFrame(topbar, fg_color="transparent")
         user.pack(side="right")
@@ -221,7 +205,7 @@ class DashboardAdmin(DashboardBase):
         ctk.CTkLabel(
             texto,
             text="Administrador",
-            font=("Segoe UI",15,"bold")
+            font=("Segoe UI", 15, "bold")
         ).pack(anchor="w")
 
         ctk.CTkLabel(
@@ -229,13 +213,9 @@ class DashboardAdmin(DashboardBase):
             text="Administrador",
             text_color="gray"
         ).pack(anchor="w")
-=======
-    def __init__(self, parent):
-        super().__init__(parent, "Painel Administrativo")
->>>>>>> e6c7e2e51d53b791fbb4f265798f0f6350352252
 
     # =========================
-    # CARDS
+    # CARDS DATA
     # =========================
     def get_cards_data(self):
         return [
@@ -246,7 +226,7 @@ class DashboardAdmin(DashboardBase):
         ]
 
     # =========================
-    # TABLE
+    # TABLE CONFIG
     # =========================
     def table_title(self):
         return "Consultas de Hoje"
@@ -261,7 +241,7 @@ class DashboardAdmin(DashboardBase):
         return consultas_hoje()
 
     # =========================
-    # MIDDLE
+    # MIDDLE (PRIORIDADES)
     # =========================
     def middle_title(self):
         return "Consultas por Prioridade"
@@ -281,7 +261,7 @@ class DashboardAdmin(DashboardBase):
         ctk.CTkLabel(row, text=f"{total} consultas").pack(side="left")
 
     # =========================
-    # RIGHT
+    # RIGHT (AGENDA MÉDICOS)
     # =========================
     def right_title(self):
         return "Agenda dos Médicos"
