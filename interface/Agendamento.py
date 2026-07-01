@@ -7,7 +7,7 @@ from interface._base import _topbar_base
 from utils.helpers import centralizar_janela
 
 
-class MarcacaoContent:
+class AgendamentoContent:
 
     def __init__(self, parent):
         self.parent = parent
@@ -27,7 +27,7 @@ class MarcacaoContent:
 
         left = ctk.CTkFrame(header, fg_color="transparent")
         left.pack(side="left")
-        ctk.CTkLabel(left, text="Marcação de Consultas", font=("Segoe UI", 30, "bold"), text_color="#183153").pack(anchor="w")
+        ctk.CTkLabel(left, text="Agendamento", font=("Segoe UI", 30, "bold"), text_color="#183153").pack(anchor="w")
         ctk.CTkLabel(left, text="Painel de Administração: Consultas agendadas pelos pacientes.", font=("Segoe UI", 14), text_color="#6B7280").pack(anchor="w", pady=(3, 0))
 
     # =========================================================================
@@ -38,7 +38,7 @@ class MarcacaoContent:
         filtros.pack(fill="x", padx=35, pady=(0, 20))
 
         self.txt_pesquisa = ctk.CTkEntry(
-            filtros, placeholder_text="🔍 Pesquisar por paciente, médico ou especialidade...",
+            filtros, placeholder_text="🔍 Pesquisar por paciente ou médico...",
             height=45, corner_radius=8, border_width=1, font=("Segoe UI", 14),
         )
         self.txt_pesquisa.pack(side="left", fill="x", expand=True)
@@ -94,6 +94,7 @@ class MarcacaoContent:
                 return
 
             for i, c in enumerate(consultas):
+                consulta_id = c[0]
                 linha = ctk.CTkFrame(self.body, fg_color="white", height=68)
                 linha.pack(fill="x")
                 linha.pack_propagate(False)
@@ -116,18 +117,65 @@ class MarcacaoContent:
                 elif str(c[5]) == "Concluído": lbl_est.configure(text_color="#16A34A")
                 elif str(c[5]) == "Cancelado": lbl_est.configure(text_color="#EF4444")
 
-                # Botões para o Admin gerir a marcação do paciente
+                # Botões para o Admin gerir o agendamento do paciente
                 acoes = ctk.CTkFrame(linha, width=210, fg_color="white")
                 acoes.pack(side="left", fill="y")
                 acoes.pack_propagate(False)
 
-                ctk.CTkButton(acoes, text="Reagendar", width=85, height=34, corner_radius=8, fg_color="#4B5563", hover_color="#374151").pack(side="left", padx=(10, 5), pady=10)
-                ctk.CTkButton(acoes, text="Cancelar", width=85, height=34, corner_radius=8, fg_color="#EF4444", hover_color="#DC2626").pack(side="left", padx=5, pady=10)
+                ctk.CTkButton(acoes, text="Reagendar", width=85, height=34, corner_radius=8, 
+                              fg_color="#4B5563", hover_color="#374151", font=("Segoe UI", 12, "bold"),
+                              command=lambda id_c=consulta_id: self.abrir_form_reagendamento(id_c)).pack(side="left", padx=(10, 5), pady=10)
+                
+                ctk.CTkButton(acoes, text="Cancelar", width=85, height=34, corner_radius=8, 
+                              fg_color="#EF4444", hover_color="#DC2626", font=("Segoe UI", 12, "bold"),
+                              command=lambda id_c=consulta_id: self.cancelar_agendamento_acao(id_c)).pack(side="left", padx=5, pady=10)
 
                 if i < len(consultas) - 1:
                     ctk.CTkFrame(self.body, height=1, fg_color="#F1F5F9").pack(fill="x", padx=15)
         except Exception as e:
             print(f"Erro ao carregar consultas no painel admin: {e}")
+
+    # =========================================================================
+    # ACOES E POPUPS CENTRALIZADOS DE AGENDAMENTO
+    # =========================================================================
+    def abrir_form_reagendamento(self, consulta_id):
+        janela = ctk.CTkToplevel(self.parent)
+        janela.title("Reagendar Consulta")
+        janela.resizable(False, False)
+        janela.grab_set()
+        
+        # Centralização precisa
+        centralizar_janela(janela, 450, 400)
+
+        ctk.CTkLabel(janela, text=f"Reagendar Consulta #{consulta_id}", font=("Segoe UI", 18, "bold")).pack(pady=20)
+        
+        self.nova_data = ctk.CTkEntry(janela, placeholder_text="Nova Data (YYYY-MM-DD)")
+        self.nova_data.pack(pady=10, fill="x", padx=30)
+        
+        self.nova_hora = ctk.CTkEntry(janela, placeholder_text="Nova Hora (HH:MM)")
+        self.nova_hora.pack(pady=10, fill="x", padx=30)
+
+        def salvar_reagendamento():
+            try:
+                from database.database import atualizar_data_consulta
+                atualizar_data_consulta(consulta_id, self.nova_data.get(), self.nova_hora.get())
+                janela.destroy()
+                messagebox.showinfo("Sucesso", "Consulta reagendada com sucesso!")
+                self.refresh_table()
+            except Exception as e:
+                messagebox.showerror("Erro", f"Não foi possível reagendar: {e}")
+
+        ctk.CTkButton(janela, text="Confirmar Alteração", fg_color="#2563EB", command=salvar_reagendamento).pack(pady=20)
+
+    def cancelar_agendamento_acao(self, consulta_id):
+        if messagebox.askyesno("Confirmar Cancelamento", f"Tens a certeza que desejas cancelar o agendamento #{consulta_id}?"):
+            try:
+                from database.database import cancelar_consulta_db
+                cancelar_consulta_db(consulta_id)
+                messagebox.showinfo("Sucesso", "Agendamento cancelado com sucesso!")
+                self.refresh_table()
+            except Exception as e:
+                messagebox.showerror("Erro", f"Não foi possível cancelar o agendamento: {e}")
 
     def table_footer(self):
         ctk.CTkFrame(self.content, height=1, fg_color="#E5E7EB").pack(fill="x")

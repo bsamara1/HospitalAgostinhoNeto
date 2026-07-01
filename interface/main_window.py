@@ -7,7 +7,7 @@ MENUS = [
     ("Painel Principal", "assets/casa.png"),
     ("Pacientes", "assets/utilizadores.png"),
     ("Médicos", "assets/perfil.png"),
-    ("Marcações", "assets/agendar.png"),
+    ("Agendamento", "assets/agendar.png"),
     ("Reagendamento", "assets/reagendar.png"),
     ("Cancelamento", "assets/cancelar.png"),
     ("Triagem", "assets/triagem.png"),
@@ -156,9 +156,9 @@ class MainContent:
             from interface.medicos import MedicosContent
             MedicosContent(self.content_frame)
 
-        elif menu_name == "Marcações":
-            from interface.marcacao import MarcacaoContent
-            MarcacaoContent(self.content_frame)
+        elif menu_name == "Agendamento":
+            from interface.Agendamento import AgendamentoContent
+            AgendamentoContent(self.content_frame)
 
         elif menu_name == "Reagendamento":
             from interface.reagendamento import ReagendamentoContent
