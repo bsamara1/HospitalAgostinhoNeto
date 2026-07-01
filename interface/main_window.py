@@ -210,7 +210,7 @@ class MainContent:
 
         elif menu_name == "Definições":
             from interface.definicao import DefinicaoContent
-            DefinicaoContent(self.content_frame)
+            DefinicaoContent(self.content_frame, self.sessao)
 
     # =========================
     # LOGOUT

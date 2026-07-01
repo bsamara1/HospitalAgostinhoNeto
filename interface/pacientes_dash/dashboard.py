@@ -13,11 +13,12 @@ from database.database import (
 
 class DashboardPacienteContent:
 
-    def __init__(self, parent, id_paciente):
+    def __init__(self, parent, id_paciente, sessao=None):
         self.parent = parent
         self.id_paciente = id_paciente
+        self.sessao = sessao
 
-        _topbar_base(parent, "Dashboard do Paciente")
+        _topbar_base(parent, "Dashboard do Paciente", sessao)
 
         self.cards()
         self.center_area()

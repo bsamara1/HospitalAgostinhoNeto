@@ -2,6 +2,7 @@ import customtkinter as ctk
 import os
 import sys
 
+
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -12,9 +13,5 @@ criar_tabelas()
 criar_admin()
 criar_paciente_teste()
 
-root = ctk.CTk()
-root.withdraw()
-
-AppShell(root)
-
-root.mainloop()
+app = AppShell()
+app.mainloop()
