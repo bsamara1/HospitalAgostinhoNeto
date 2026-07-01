@@ -19,7 +19,7 @@ def _placeholder(parent, titulo):
                  font=("Segoe UI", 13), text_color="#6B7280").pack(pady=(5, 0))
 
 
-def _topbar_base(parent, titulo):
+def _topbar_base(parent, titulo, sessao=None):
     topbar = ctk.CTkFrame(parent, fg_color="#F4F6FB", height=60)
     topbar.pack(fill="x", padx=20, pady=10)
     topbar.pack_propagate(False)
@@ -39,7 +39,10 @@ def _topbar_base(parent, titulo):
     except Exception:
         pass
 
+    nome = sessao.get("nome", "Administrador") if sessao else "Administrador"
+    perfil = "Paciente" if sessao and sessao.get("perfil") == "paciente" else (sessao.get("perfil", "Administrador").capitalize() if sessao else "Administrador")
+
     texto = ctk.CTkFrame(user, fg_color="transparent")
     texto.pack(side="left")
-    ctk.CTkLabel(texto, text="Administrador", font=("Segoe UI", 15, "bold")).pack(anchor="w")
-    ctk.CTkLabel(texto, text="Administrador", text_color="gray").pack(anchor="w")
+    ctk.CTkLabel(texto, text=nome, font=("Segoe UI", 15, "bold")).pack(anchor="w")
+    ctk.CTkLabel(texto, text=perfil, text_color="gray").pack(anchor="w")

@@ -4,8 +4,9 @@ from interface._base import _topbar_base
 
 class DefinicaoContent:
 
-    def __init__(self, parent):
+    def __init__(self, parent, sessao=None):
         self.parent = parent
+        self.sessao = sessao
         self.main_ui()
 
     def main_ui(self):
@@ -18,14 +19,19 @@ class DefinicaoContent:
         cards = ctk.CTkFrame(scroll, fg_color="transparent")
         cards.pack(fill="x", expand=True, pady=15)
 
+        nome = self.sessao.get("nome", "Administrador") if self.sessao else "Administrador"
+        email = self.sessao.get("email", "admin@han.cv") if self.sessao else "admin@han.cv"
+        telefone = self.sessao.get("telefone", "+238 000 00 00") if self.sessao else "+238 000 00 00"
+        perfil = "Paciente" if self.sessao and self.sessao.get("perfil") == "paciente" else "Administrador"
+
         card_info = ctk.CTkFrame(cards, fg_color="white", corner_radius=15, border_width=1, border_color="#E0E4EC")
         card_info.pack(side="left", fill="both", expand=True, padx=(0, 20), ipady=20)
 
         ctk.CTkLabel(card_info, text="Informações Pessoais", font=("Segoe UI", 18, "bold"), text_color="#0B2A4A").pack(anchor="w", padx=25, pady=(20, 15))
-        self._input(card_info, "Nome Completo", "Administrador")
-        self._input(card_info, "Email", "admin@han.cv")
-        self._input(card_info, "Tipo de Utilizador", "Administrador")
-        self._input(card_info, "Telefone", "+238 000 00 00")
+        self._input(card_info, "Nome Completo", nome)
+        self._input(card_info, "Email", email)
+        self._input(card_info, "Tipo de Utilizador", perfil)
+        self._input(card_info, "Telefone", telefone)
         ctk.CTkButton(card_info, text="Editar Informações", fg_color="#2563EB", hover_color="#1E4FD8", height=45, font=("Segoe UI", 14, "bold")).pack(fill="x", padx=25, pady=(20, 0))
 
         card_pass = ctk.CTkFrame(cards, fg_color="white", corner_radius=15, border_width=1, border_color="#E0E4EC")

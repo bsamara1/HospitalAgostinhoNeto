@@ -3,11 +3,12 @@ from interface._base import _topbar_base
 
 class CancelarContent:
 
-    def __init__(self, parent, id_paciente):
+    def __init__(self, parent, id_paciente, sessao=None):
         self.parent = parent
         self.id_paciente = id_paciente
+        self.sessao = sessao
 
-        _topbar_base(parent, "Cancelar Consulta")
+        _topbar_base(parent, "Cancelar Consulta", sessao)
         self.build_ui()
 
     def build_ui(self):

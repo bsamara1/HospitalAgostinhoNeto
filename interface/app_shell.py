@@ -1,12 +1,20 @@
 import customtkinter as ctk
 
 
-class AppShell(ctk.CTkToplevel):
+class AppShell(ctk.CTk):
 
-    def __init__(self, master):
-        super().__init__(master)
+    def __init__(self):
+        super().__init__()
 
         self.title("HAN")
+        self.geometry("1280x820")
+        self.minsize(900, 600)
+        self.deiconify()
+        self.lift()
+        self.focus_force()
+        self.update_idletasks()
+        self.attributes("-topmost", True)
+        self.after(500, lambda: self.attributes("-topmost", False))
         self.after(100, lambda: self.state("zoomed"))
 
         self.configure(fg_color="#F5F7FB")

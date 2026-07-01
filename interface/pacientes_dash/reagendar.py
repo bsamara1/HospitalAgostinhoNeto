@@ -5,11 +5,12 @@ from database.database import listar_consultas_paciente, reagendar_consulta_por_
 
 class ReagendarContent:
 
-    def __init__(self, parent, id_paciente):
+    def __init__(self, parent, id_paciente, sessao=None):
         self.parent = parent
         self.id_paciente = id_paciente
+        self.sessao = sessao
 
-        _topbar_base(parent, "Reagendar Consulta")
+        _topbar_base(parent, "Reagendar Consulta", sessao)
         self.build_ui()
 
     def build_ui(self):

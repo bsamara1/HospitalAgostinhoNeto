@@ -4,11 +4,12 @@ from database.database import listar_notificacoes
 
 class NotificacoesContent:
 
-    def __init__(self, parent, id_paciente):
+    def __init__(self, parent, id_paciente, sessao=None):
         self.parent = parent
         self.id_paciente = id_paciente
+        self.sessao = sessao
 
-        _topbar_base(parent, "Notificações")
+        _topbar_base(parent, "Notificações", sessao)
         self.build_ui()
 
     def build_ui(self):
