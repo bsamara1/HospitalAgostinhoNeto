@@ -5,7 +5,99 @@ from interface._base import _topbar_base
 from utils.helpers import centralizar_janela
 
 
+<<<<<<< HEAD
+        # TERMINAR SESSÃO (fora do for)
+        ctk.CTkButton(
+                self.sidebar,
+                text="Terminar Sessão",
+                image=icon("assets/sair.png"),
+                compound="left",
+                fg_color="transparent",
+                text_color="#FF6B6B",
+                hover_color="#2A3F5F",
+                anchor="w",
+                height=45,
+                command=self.terminar_sessao
+                ).pack(
+                side="bottom",
+                fill="x",
+                padx=15,
+                pady=20
+                )
+        ctk.CTkFrame(
+                    self.sidebar,
+                    height=1,
+                    fg_color="#35506E"
+                ).pack(side="bottom", fill="x", padx=15, pady=(0, 10))
+        
+    def terminar_sessao(self):
+
+                confirmar = messagebox.askyesno(
+                    "Terminar Sessão",
+                    "Deseja realmente terminar a sessão?"
+                )
+
+                if confirmar:
+                    self.destroy()
+
+                    import customtkinter as ctk
+                    from interface.login import Login
+
+                    root = ctk.CTk()
+
+                    Login(root)
+
+                    root.mainloop()
+    def abrir_menu(self, menu):
+
+        self.destroy()
+
+        if menu == "Médicos":
+            from interface.medicos import Medicos
+
+            Medicos().mainloop()
+
+        if menu == "Dashboard":
+            from interface.dashboard import Dashboard
+            Dashboard().mainloop()   
+        
+        elif menu == "Marcações":
+            from interface.Agendamento import Marcacao
+            Marcacao().mainloop() 
+        elif menu == "Reagendamento":
+            from interface.reagendamento import Reagendamento
+            Reagendamento().mainloop() 
+        elif menu == "Cancelamento":
+            from interface.cancelamento import Cancelamento
+            Cancelamento().mainloop() 
+        elif menu == "Triagem":
+            from interface.triagem import Triagem
+            Triagem().mainloop() 
+        elif menu == "Prioridades":
+            from interface.prioridades import Prioridades
+            Prioridades().mainloop() 
+        elif menu == "Relatórios":
+            from interface.relatorios import Relatorios
+            Relatorios().mainloop() 
+        elif menu == "Definições":
+            from interface.definicao import Definicao
+            Definicao().mainloop() 
+    # =========================
+    # MAIN AREA
+    # =========================
+   # =========================
+# MAIN
+# =========================
+    def main_ui(self):
+
+        self.main = ctk.CTkFrame(
+            self.container,
+            fg_color="#F4F6FB"
+        )
+        self.main.pack(side="left", fill="both", expand=True)
+=======
 class PacientesContent:
+>>>>>>> e6c7e2e51d53b791fbb4f265798f0f6350352252
 
     def __init__(self, parent):
         self.parent = parent
@@ -49,21 +141,39 @@ class PacientesContent:
         ctk.CTkButton(janela, text="Guardar", fg_color="#2563EB", command=self.guardar_paciente).pack(pady=20)
 
     def guardar_paciente(self):
-        conn = conectar()
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO pacientes(nome, sexo, idade, telefone, bi, nascimento, morada)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (
-            self.nome.get(), self.sexo.get(), self.idade.get(),
-            self.telefone.get(), self.bi.get(),
-            self.nascimento.get(), self.morada.get()
-        ))
-        conn.commit()
-        conn.close()
-        self._form_janela.destroy()
-        messagebox.showinfo("Sucesso", "Paciente adicionado com sucesso!")
-        self.refresh_table()
+        nome = self.nome.get().strip()
+        sexo = self.sexo.get().strip()
+        idade = self.idade.get().strip()
+        telefone = self.telefone.get().strip()
+        bi = self.bi.get().strip()
+        nascimento = self.nascimento.get().strip()
+        morada = self.morada.get().strip()
+
+        if not all([nome, sexo, idade, telefone, bi, nascimento, morada]):
+            messagebox.showwarning("Erro", "Preencha todos os campos do paciente.")
+            return
+
+        if not idade.isdigit():
+            messagebox.showwarning("Erro", "A idade deve ser um número válido.")
+            return
+
+        try:
+            conn = conectar()
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO pacientes(nome, sexo, idade, telefone, bi, nascimento, morada)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (
+                nome, sexo, int(idade), telefone, bi,
+                nascimento, morada
+            ))
+            conn.commit()
+            conn.close()
+            self._form_janela.destroy()
+            messagebox.showinfo("Sucesso", "Paciente adicionado com sucesso!")
+            self.refresh_table()
+        except Exception as e:
+            messagebox.showerror("Erro", f"Não foi possível adicionar o paciente: {e}")
 
     def eliminar_paciente_acao(self, paciente_id):
         if messagebox.askyesno("Confirmar Cancelamento", f"Tens a certeza que desejas ELIMINAR o Paciente ID #{paciente_id}?\nEsta ação irá registá-lo como 'Cancelado' no histórico."):

@@ -250,8 +250,36 @@ class TriagemContent:
 
         ctk.CTkLabel(janela, text="Sintomas / Observações:", font=("Segoe UI", 13, "bold"), text_color="#475467").pack(anchor="w", padx=45, pady=(10, 2))
         
+<<<<<<< HEAD
+        elif menu == "Marcações":
+            from interface.Agendamento import Marcacao
+            Marcacao().mainloop() 
+        elif menu == "Reagendamento":
+            from interface.reagendamento import Reagendamento
+            Reagendamento().mainloop() 
+        elif menu == "Cancelamento":
+            from interface.cancelamento import Cancelamento
+            Cancelamento().mainloop() 
+        elif menu == "Dashboard":
+            from interface.dashboard import Dashboard
+            Dashboard().mainloop() 
+        elif menu == "Prioridades":
+            from interface.prioridades import Prioridades
+            Prioridades().mainloop() 
+        elif menu == "Relatórios":
+            from interface.relatorios import Relatorios
+            Relatorios().mainloop() 
+        elif menu == "Definições":
+            from interface.definicao import Definicao
+            Definicao().mainloop() 
+    # =========================
+    # MAIN AREA
+    # =========================
+    def main_ui(self):
+=======
         self.sintomas = ctk.CTkTextbox(janela, height=120, corner_radius=8, border_width=1, border_color="#D0D5DD")
         self.sintomas.pack(fill="x", padx=45, pady=5)
+>>>>>>> e6c7e2e51d53b791fbb4f265798f0f6350352252
 
         ctk.CTkButton(
             janela, text="Calcular Prioridade & Guardar", 

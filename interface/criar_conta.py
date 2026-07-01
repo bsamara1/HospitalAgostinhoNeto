@@ -7,9 +7,10 @@ from database.database import conectar
 
 class CriarContaContent:
 
-    def __init__(self, parent, on_back, perfil_definido=None):
+    def __init__(self, parent, on_back, on_created=None, perfil_definido=None):
         self.parent = parent
         self.on_back = on_back
+        self.on_created = on_created
         self.perfil_definido = perfil_definido
 
         ctk.set_appearance_mode("light")
@@ -131,16 +132,42 @@ class CriarContaContent:
             conn = conectar()
             cursor = conn.cursor()
 
+            paciente_id = None
+            if perfil == "paciente":
+                cursor.execute("""
+                    INSERT INTO pacientes(nome, sexo, idade, telefone, bi, nascimento, morada, estado)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, (nome, "Não definido", 0, telefone, "", "", "", ""))
+                paciente_id = cursor.lastrowid
+
             cursor.execute("""
                 INSERT INTO utilizadores
-                (nome, username, senha, perfil, email, telefone)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (nome, username, senha, perfil, email, telefone))
+                (nome, username, senha, perfil, email, telefone, paciente_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (nome, username, senha, perfil, email, telefone, paciente_id))
 
+            utilizador_id = cursor.lastrowid
             conn.commit()
             conn.close()
 
             messagebox.showinfo("Sucesso", "Conta criada com sucesso!")
+
+            sessao = {
+                "id": utilizador_id,
+                "nome": nome,
+                "username": username,
+                "perfil": perfil,
+                "email": email,
+                "telefone": telefone,
+                "paciente_id": paciente_id,
+            }
+
+            if perfil == "paciente" and self.on_created:
+                self.on_created(sessao)
+                return
+
+            if self.on_back:
+                self.on_back()
 
         except sqlite3.IntegrityError:
             messagebox.showerror("Erro", "Username já existe!")

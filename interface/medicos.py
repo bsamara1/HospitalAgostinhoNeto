@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from tkinter import messagebox
-from database.database import conectar, listar_medicos
+from database.database import conectar, listar_medicos,inserir_medico
 from interface._base import _topbar_base
 from utils.helpers import centralizar_janela
 
@@ -43,41 +43,51 @@ class MedicosContent:
         ctk.CTkButton(janela, text="Guardar", fg_color="#2563EB", hover_color="#1E4FD8",
                       command=self.guardar_medico).pack(pady=20)
 
-    def guardar_medico(self):
-        conn = conectar()
-        cursor = conn.cursor()
+    from database.database import inserir_medico
 
+    def guardar_medico(self):
         nome = self.nome.get()
         email = self.email.get()
         especialidade = self.especialidade.get()
         telefone = self.telefone.get()
         estado = self.estado.get()
 
-        # 1. Criar médico
-        cursor.execute("""
-            INSERT INTO medicos(nome, email, especialidade, telefone, estado)
-            VALUES (?, ?, ?, ?, ?)
-        """, (nome, email, especialidade, telefone, estado))
-
-        # 2. Criar login automaticamente
-        username = email.split("@")[0]   # exemplo: joao@gmail -> joao
-        senha = "1234"                   # senha padrão (podes mudar depois)
-
-        cursor.execute("""
-            INSERT INTO utilizadores(nome, username, senha, perfil, email, telefone)
-            VALUES (?, ?, ?, 'Medico', ?, ?)
-        """, (nome, username, senha, email, telefone))
-
-        conn.commit()
-        conn.close()
-
-        self._form_janela.destroy()
-        messagebox.showinfo(
-            "Sucesso",
-            f"Médico criado!\nLogin: {username}\nSenha: {senha}"
+        username, senha = inserir_medico(
+            nome, email, especialidade, telefone, estado
         )
 
+        self._form_janela.destroy()
+
+        self.mostrar_credenciais(username, senha)
+
         self.refresh_table()
+        
+    def mostrar_credenciais(self, username, senha):
+        win = ctk.CTkToplevel(self.parent)
+        win.title("Credenciais do Médico")
+        win.geometry("400x280")
+        win.grab_set()
+
+        ctk.CTkLabel(
+            win,
+            text="Médico criado com sucesso!",
+            font=("Segoe UI", 18, "bold")
+        ).pack(pady=20)
+
+        ctk.CTkLabel(win, text=f"Username: {username}").pack(pady=10)
+        ctk.CTkLabel(win, text=f"Senha: {senha}").pack(pady=10)
+
+        ctk.CTkButton(
+            win,
+            text="Copiar",
+            command=lambda: win.clipboard_append(f"{username} | {senha}")
+        ).pack(pady=15)
+
+        ctk.CTkButton(
+            win,
+            text="Fechar",
+            command=win.destroy
+        ).pack()
 
     def header(self):
         header = ctk.CTkFrame(self.parent, fg_color="#F4F6FB", height=90)
@@ -208,6 +218,119 @@ class MedicosContent:
                           fg_color=cor, border_width=1, border_color="#D0D5DD",
                           text_color=texto_cor, hover_color="#F9FAFB").pack(side="left", padx=3)
 
+<<<<<<< HEAD
+        self.destroy()
+
+        if menu == "Dasboard":
+            from interface.dashboard import Dashboard
+
+            Dashboard().mainloop()
+
+            app.mainloop()
+        if menu == "Pacientes":
+            from interface.pacientes import Pacientes
+            Pacientes().mainloop()   
+        
+        elif menu == "Marcações":
+            from interface.Agendamento import Marcacao
+            Marcacao().mainloop() 
+        elif menu == "Reagendamento":
+            from interface.reagendamento import Reagendamento
+            Reagendamento().mainloop() 
+        elif menu == "Cancelamento":
+            from interface.cancelamento import Cancelamento
+            Cancelamento().mainloop() 
+        elif menu == "Triagem":
+            from interface.triagem import Triagem
+            Triagem().mainloop() 
+        elif menu == "Prioridades":
+            from interface.prioridades import Prioridades
+            Prioridades().mainloop() 
+        elif menu == "Relatórios":
+            from interface.relatorios import Relatorios
+            Relatorios().mainloop() 
+        elif menu == "Definições":
+            from interface.definicao import Definicao
+            Definicao().mainloop() 
+    # =========================
+    # MAIN AREA
+    # =========================
+    def main_ui(self):
+
+        self.main = ctk.CTkFrame(self.container, fg_color="#F4F6FB")
+        self.main.pack(side="left", fill="both", expand=True)
+
+        self.topbar()
+
+    # =========================
+    # TOPBAR
+    # =========================
+    def topbar(self):
+
+        topbar = ctk.CTkFrame(self.main, fg_color="#F4F6FB", height=60)
+        topbar.pack(fill="x", padx=20, pady=10)
+
+        ctk.CTkLabel(
+            topbar,
+            text="Medicos",
+            font=("Segoe UI", 22, "bold"),
+            text_color="#0B2A4A"
+        ).pack(side="left",padx=20)
+        linha = ctk.CTkFrame(
+            self.main,
+            height=1,
+            fg_color="#D8DEE9",
+            corner_radius=0
+        )
+
+        linha.pack(
+            fill="x",
+            pady=(5, 0)
+        )
+
+        avatar = ctk.CTkImage(
+        Image.open("assets/perfil.png"),
+        size=(42,42)
+        )
+
+        user = ctk.CTkFrame(topbar, fg_color="transparent")
+        user.pack(side="right")
+
+        ctk.CTkLabel(
+            user,
+            image=avatar,
+            text=""
+        ).pack(side="left", padx=10)
+
+        texto = ctk.CTkFrame(user, fg_color="transparent")
+        texto.pack(side="left")
+
+        ctk.CTkLabel(
+            texto,
+            text="Administrador",
+            font=("Segoe UI",15,"bold")
+        ).pack(anchor="w")
+
+        ctk.CTkLabel(
+            texto,
+            text="Administrador",
+            text_color="gray"
+        ).pack(anchor="w")
+
+    
+
+  
+  
+
+
+# =========================
+# RUN APP
+# =========================
+if __name__ == "__main__":
+    app = Medicos()
+    app.mainloop()
+=======
     def refresh_table(self):
         self.card.destroy()
         self.table_area()
+>>>>>>> e6c7e2e51d53b791fbb4f265798f0f6350352252
