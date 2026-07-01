@@ -28,7 +28,7 @@ class AppShell(ctk.CTkToplevel):
 
     def show_app(self, sessao):
         self.clear()
-<<<<<<< HEAD
+
 
         perfil = sessao.get("perfil")
 
@@ -44,10 +44,8 @@ class AppShell(ctk.CTkToplevel):
             from tkinter import messagebox
             messagebox.showerror("Erro", "Perfil desconhecido")
             self.show_login()
-=======
         from interface.main_window import MainContent
         MainContent(self.container, self.show_login, sessao)
->>>>>>> 80e18aae06b56ea8a4383fffb211d44f330d3568
 
     def show_register(self):
         self.clear()

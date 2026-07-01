@@ -168,7 +168,6 @@ def criar_admin():
     conn.close()
 
 
-<<<<<<< HEAD
 # =========================
 # UTILIZADORES (LOGIN)
 # =========================
@@ -197,63 +196,61 @@ def gerar_username(email):
 
 
 def recuperar_credenciais(email):
-=======
-def criar_paciente_teste():
-    conn = conectar()
-    cursor = conn.cursor()
+    def criar_paciente_teste():
+        conn = conectar()
+        cursor = conn.cursor()
 
-    cursor.execute("SELECT id FROM utilizadores WHERE username = ?", ("paciente1",))
-    if cursor.fetchone():
+        cursor.execute("SELECT id FROM utilizadores WHERE username = ?", ("paciente1",))
+        if cursor.fetchone():
+            conn.close()
+            return
+
+        cursor.execute("""
+            INSERT INTO pacientes(nome, sexo, idade, telefone, bi, nascimento, morada, estado)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            "Paciente Teste",
+            "Não definido",
+            30,
+            "912345678",
+            "",
+            "",
+            "",
+            "Ativo"
+        ))
+        paciente_id = cursor.lastrowid
+
+        cursor.execute("""
+            INSERT INTO utilizadores(nome, username, senha, perfil, email, telefone, paciente_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            "Paciente Teste",
+            "paciente1",
+            "1234",
+            "paciente",
+            "paciente1@example.com",
+            "912345678",
+            paciente_id
+        ))
+
+        conn.commit()
         conn.close()
-        return
-
-    cursor.execute("""
-        INSERT INTO pacientes(nome, sexo, idade, telefone, bi, nascimento, morada, estado)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        "Paciente Teste",
-        "Não definido",
-        30,
-        "912345678",
-        "",
-        "",
-        "",
-        "Ativo"
-    ))
-    paciente_id = cursor.lastrowid
-
-    cursor.execute("""
-        INSERT INTO utilizadores(nome, username, senha, perfil, email, telefone, paciente_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (
-        "Paciente Teste",
-        "paciente1",
-        "1234",
-        "paciente",
-        "paciente1@example.com",
-        "912345678",
-        paciente_id
-    ))
-
-    conn.commit()
-    conn.close()
 
 
-def inserir_medico(nome, email, especialidade, telefone, estado):
->>>>>>> 80e18aae06b56ea8a4383fffb211d44f330d3568
-    conn = conectar()
-    cursor = conn.cursor()
+    def inserir_medico(nome, email, especialidade, telefone, estado):
+        conn = conectar()
+        cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT username, senha
-        FROM utilizadores
-        WHERE email = ?
-    """, (email,))
+        cursor.execute("""
+            SELECT username, senha
+            FROM utilizadores
+            WHERE email = ?
+        """, (email,))
 
-    dados = cursor.fetchone()
-    conn.close()
+        dados = cursor.fetchone()
+        conn.close()
 
-    return dados
+        return dados
 
 
 # =========================
